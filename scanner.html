@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
 <title>Сканер мемкоинов Solana</title>
 <style>
   :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--text:#e6edf3;--mut:#8b949e;--g:#3fb950;--y:#d29922;--r:#f85149;--acc:#58a6ff}
@@ -180,6 +181,83 @@
   .rsn .ctxh{display:block;margin-top:4px;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
   .empty{padding:40px;text-align:center;color:var(--mut)}
   sub{font-size:.7em}
+
+  /* ---------- телефон ---------- */
+  .mobonly{display:none}
+  .mob{display:none}
+  @media(max-width:760px){
+    body{font-size:14px}
+    input,select,textarea{font-size:16px!important}
+    header{padding:8px 10px;gap:6px}
+    h1{font-size:15px;margin:0}
+    header .tabs{order:3;width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+    header .tabs button{white-space:nowrap;padding:7px 10px;font-size:13px;flex:none}
+    #status{order:4;width:100%;margin:0;font-size:11px;line-height:1.35;max-height:2.7em;overflow:hidden}
+    .alert{margin:6px 8px 0;padding:8px 10px}
+    .mobonly{display:flex}
+    .mobbar{gap:6px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line);align-items:center}
+    .mobbar button{padding:9px 12px;white-space:nowrap}
+    .mobbar input{flex:1;min-width:0;padding:9px 10px}
+    .ctrl{display:none;padding:10px;gap:8px}
+    .ctrl.open{display:flex}
+    .ctrl>label{flex:1 1 45%;min-width:0}
+    .ctrl>label.chk{flex:1 1 45%}
+    .ctrl>label:has(.addr){flex:1 1 100%}
+    .ctrl input[type=number],.ctrl select,.ctrl input.addr,.ctrl #q{width:100%!important}
+    .ctrl>button{flex:1 1 30%;padding:9px}
+    .ctrl label:has(#q){display:none}
+    .srcline{display:none;padding:6px 10px}
+    .ctrl.open+.srcline{display:block}
+    /* таблица: только главное */
+    #tb td,.tblwrap th{padding:7px 3px}
+    table:has(>#tb){table-layout:fixed;width:100%}
+    table:has(>#tb) th,table:has(>#tb) td{overflow:hidden;text-overflow:ellipsis}
+    th.c-fav{width:30px} th.c-risk{width:22px} th.c-score{width:38px} th.c-price{width:80px} th.c-h24{width:60px} th.c-mom{width:28px}
+    table:has(>#tb) .c-fav{padding-left:2px;padding-right:0;text-overflow:clip}
+    th.c-mom{font-size:0}
+    th.c-mom::after{content:"🔥";font-size:11px}
+    th.c-risk{font-size:0}
+    th.c-risk::after{content:"●";font-size:11px}
+    .c-sym,.c-sym *{text-align:left}
+    #tb .c-price{font-size:12px}
+    #tb .c-h24{font-size:12px}
+    .tok{gap:6px}
+    .tok img{width:20px;height:20px;flex:none}
+    .c-num,.c-age,.c-spark,.c-mc,.c-liq,.c-vol,.c-m5,.c-h1,.c-bs,.c-soc{display:none!important}
+    .c-sym .tok>div{min-width:0;flex:1}
+    .c-sym .sym{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .c-sym .nm{display:none}
+    .c-sym .nm.mob{display:block;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+    th.c-score{font-size:0}
+    th.c-score::after{content:"Рейт.";font-size:11px}
+    tr.sep td{white-space:normal;font-size:12px}
+    .star{font-size:17px;padding:2px}
+    /* панель монеты на весь экран */
+    main.withSide{grid-template-columns:minmax(0,1fr)}
+    main.withSide #sideWrap{position:fixed;inset:0;z-index:45;max-height:none;height:100dvh;border:0;padding:10px 12px calc(70px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+    #sideClose{position:sticky;top:0;z-index:3;float:right;padding:9px 14px;font-size:14px;background:#1f6feb;border-color:#1f6feb;margin:0 0 6px 8px}
+    .chart{height:260px}
+    aside button{padding:10px}
+    /* мои сделки, тетрадь, кошельки */
+    .pf{padding:10px}
+    .pfstats div{min-width:calc(50% - 5px);flex:1 1 calc(50% - 5px);padding:7px 9px}
+    .pfbar button,.pfbar>label{flex:1 1 45%}
+    .wform>label{flex:1 1 45%;min-width:0}
+    .wform>label input,.wform>label select{width:100%!important}
+    .wform>button,.wform>a{flex:1 1 45%}
+    .bottimer{gap:8px;font-size:13px}
+    .bottimer button{margin-left:0;width:100%}
+    .tblwrap{-webkit-overflow-scrolling:touch}
+    .pf table td input{width:70px}
+    /* карточка сделки и чат */
+    #tm{padding:0}
+    .tmBox{border-radius:0;border:0;padding:12px;min-height:100dvh;width:100%}
+    .tmBox .chart{height:260px}
+    #aiBtn{right:10px;bottom:calc(10px + env(safe-area-inset-bottom));padding:9px 13px;font-size:13px}
+    #aiPanel{width:100vw;height:100dvh}
+    .colmenu{position:fixed;left:8px;right:8px;top:auto;bottom:8px;max-height:70vh;overflow:auto;z-index:48}
+  }
+  body.incloud #aiBtn{display:none}
 </style>
 </head>
 <body>
@@ -197,6 +275,7 @@
   <textarea id="tmNote" placeholder="Почему купили, что ожидали, что получилось, чему научились…"></textarea>
 </div></div>
 <div id="viewScan">
+<div class="mobbar mobonly"><button id="mobF">⚙️ Фильтры</button><input id="mobQ" placeholder="Поиск монеты…" autocomplete="off"><button id="mobR" class="pri">↻</button></div>
 
 <div class="ctrl">
   <label>Источник
@@ -818,7 +897,7 @@ function render(){
       <td class="c-fav"><span class="star ${fv?"on":""}" title="${fv?"Убрать из избранного":"Добавить в избранное"}">⭐</span></td>
       <td class="c-risk"><span class="light L-${lc}"></span>${r.pinned?" 📌":""}</td>
       <td class="c-score"><span class="score sc-${sc.total>=65?"g":sc.total>=40?"y":"r"}" title="${esc(sc.tip)}">${sc.total}</span></td>
-      <td class="c-sym"><div class="tok">${img?`<img src="${esc(img)}" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.visibility='hidden'">`:'<img alt="">'}<div><div class="sym">${esc(p.baseToken?.symbol)}${nw&&Date.now()-nw<6e5?'<span class="newb" title="Появился в таблице недавно">NEW</span>':""}${si?.bc!=null&&!si.complete?`<span class="gradb" title="Заполнение bonding curve pump.fun (примерно)">🎓${si.bc.toFixed(0)}%</span>`:""}${cloudPos(r.addr).length?`<span class="whale" title="Эта монета открыта у серверного бота 24/7">☁️</span>`:""}${smartBuys.has(r.addr)?`<span class="whale" title="Купили ваши кошельки: ${esc(smartBuys.get(r.addr).map(x=>x.label).join(", "))}">🐋${smartBuys.get(r.addr).length}</span>`:""}</div><div class="nm">${esc(p.baseToken?.name)}</div></div></div></td>
+      <td class="c-sym"><div class="tok">${img?`<img src="${esc(img)}" referrerpolicy="no-referrer" loading="lazy" onerror="this.style.visibility='hidden'">`:'<img alt="">'}<div><div class="sym">${esc(p.baseToken?.symbol)}${nw&&Date.now()-nw<6e5?'<span class="newb" title="Появился в таблице недавно">NEW</span>':""}${si?.bc!=null&&!si.complete?`<span class="gradb" title="Заполнение bonding curve pump.fun (примерно)">🎓${si.bc.toFixed(0)}%</span>`:""}${cloudPos(r.addr).length?`<span class="whale" title="Эта монета открыта у серверного бота 24/7">☁️</span>`:""}${smartBuys.has(r.addr)?`<span class="whale" title="Купили ваши кошельки: ${esc(smartBuys.get(r.addr).map(x=>x.label).join(", "))}">🐋${smartBuys.get(r.addr).length}</span>`:""}</div><div class="nm">${esc(p.baseToken?.name)}</div><div class="nm mob">${money(p.marketCap??p.fdv)} · 💧${money(p.liquidity?.usd)} · ${ageStr(p.pairCreatedAt)}</div></div></div></td>
       <td class="c-age">${ageStr(p.pairCreatedAt)}</td>
       <td class="c-price">${price(p.priceUsd)}</td>
       <td class="c-spark">${candleCell(r)}</td>
@@ -1168,6 +1247,9 @@ function socIcons(r,so){
 document.querySelectorAll("th").forEach(th=>th.addEventListener("click",()=>{const k=th.dataset.k;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=k==="sym"?1:-1}store.set("sort",[sortKey,sortDir]);render()}));
 $("src").addEventListener("change",()=>{store.set("src",$("src").value);rows=rows.filter(r=>r.pinned);rebase=true;load()});
 $("refresh").addEventListener("click",load);
+$("mobF").onclick=()=>{const o=document.querySelector(".ctrl").classList.toggle("open");$("mobF").textContent=o?"✕ Скрыть фильтры":"⚙️ Фильтры"};
+$("mobR").onclick=load;
+$("mobQ").addEventListener("input",()=>{$("q").value=$("mobQ").value;rebase=true;render()});
 $("keep").value=String(store.get("keep",6));
 $("keep").addEventListener("change",()=>{store.set("keep",+$("keep").value);rebase=true;load()});
 $("poolClear").onclick=()=>{if(!confirm("Забыть накопленные монеты? Останутся только те, что сейчас есть в источнике."))return;seenPool={};store.set("seenPool",seenPool);rows=rows.filter(r=>r.pinned);rebase=true;load()};
@@ -1377,7 +1459,9 @@ async function buyCloud(r){
 }
 function openHash(){const m=location.hash.match(/^#t=([1-9A-HJ-NP-Za-km-z]{32,44})$/);if(!m)return;history.replaceState(null,"",location.pathname+location.search);showView("scan");$("addr").value=m[1];checkAddr()}
 window.addEventListener("hashchange",openHash);
-$("tabC").onclick=()=>{showView("c");const fr=$("cloudFrame");if(!fr.src)fr.src="index.html?embed=1"};
+function sizeCloud(){const fr=$("cloudFrame");if($("viewC").hidden)return;fr.style.height=Math.max(320,innerHeight-fr.getBoundingClientRect().top-scrollY)+"px"}
+window.addEventListener("resize",sizeCloud);
+$("tabC").onclick=()=>{showView("c");const fr=$("cloudFrame");if(!fr.src)fr.src="index.html?embed=1";scrollTo(0,0);sizeCloud()};
 setInterval(cloudSync,45000);
 
 /* ---------- demo trading ---------- */
@@ -1912,7 +1996,7 @@ $("lRows").addEventListener("click",e=>{if(e.target.closest("input"))return;cons
 $("pfOpen").addEventListener("click",pfAction);$("pfClosed").addEventListener("click",pfAction);
 $("pfOpen").addEventListener("change",e=>{const i=e.target.closest("input[data-f]");if(!i)return;const p=pf.find(x=>x.id===i.closest("tr").dataset.id);if(!p)return;const v=+i.value;
   if(i.dataset.f==="stop"){if(i.value===""||v===0){p.nostop=true;p.stop=null}else if(v>0&&v<100){p.stop=v;p.nostop=false;delete p.fired.stop}}if(i.dataset.f==="tp"&&(v>1||v===0)){p.tp=v}pfSave()});
-function showView(v){for(const[id,tab,n]of[["viewScan","tabScan","scan"],["viewPf","tabPf","pf"],["viewW","tabW","w"],["viewL","tabL","l"],["viewC","tabC","c"]]){$(id).hidden=v!==n;$(tab).classList.toggle("on",v===n)}if(v==="l")renderL();if(v==="pf"){renderPf();pfTick()}if(v==="w"){renderW();wTick()}}
+function showView(v){for(const[id,tab,n]of[["viewScan","tabScan","scan"],["viewPf","tabPf","pf"],["viewW","tabW","w"],["viewL","tabL","l"],["viewC","tabC","c"]]){$(id).hidden=v!==n;$(tab).classList.toggle("on",v===n)}document.body.classList.toggle("incloud",v==="c");if(v==="l")renderL();if(v==="pf"){renderPf();pfTick()}if(v==="w"){renderW();wTick()}}
 $("tabScan").onclick=()=>showView("scan");$("tabPf").onclick=()=>showView("pf");
 $("pfRefresh").onclick=()=>pfTick(true);
 $("pfSound").onclick=()=>beep("good");
