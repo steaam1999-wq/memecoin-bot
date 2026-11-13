@@ -7,6 +7,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Торговый бот">
 <meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="robots" content="noindex">
 <title>Торговый бот 24/7</title>
 <style>
@@ -248,12 +252,13 @@ const mstop=p=>p.nostop||p.stop==null?"без стопа":p.tsl>0?`<span class="
 function mcard(p){const v=p.amt*p.cur/p.entry,pl=v-p.amt,pc=(p.cur/p.entry-1)*100,k="m"+p.id,h=p.spark||[];
   return`<details class="tr" data-k="${esc(k)}" data-id="${esc(p.id)}"${op(k)}>
     <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${mtag(p)}</span><span class="pl">${sgn(pl)} ${pct(pc)}</span></div>
-      <div class="l2"><span>${usd(p.amt)} → ${usd(v)} · ${dur(now()-p.openedAt)}</span><span>${mstop(p)}</span></div></summary>
+      <div class="l2"><span>куплено на ${usd(p.amt)} · сейчас ${usd(v)}</span><span>${mstop(p)}</span></div></summary>
     <div class="in">
       <div class="mut" style="font-size:12.5px">${esc(p.name)}</div>
       ${sparkSvg(h,p.entry,!p.nostop&&p.stop!=null?p.entry*(1-p.stop/100):null,h.length&&h[h.length-1][1]>=p.entry)}
       <div class="kv">
-        <span>Вложено → сейчас</span><span>${usd(p.amt)} → ${usd(v)}</span>
+        <span>Куплено на</span><span>${usd(p.amt)}</span>
+        <span>Сейчас стоит</span><span>${usd(v)} (${sgn(pl)})</span>
         <span>Вход → цена</span><span>${price(p.entry)} → ${price(p.cur)}</span>
         <span>Стоп / цель</span><span>${stopTxt(p)}</span>
         ${beAt(p)?`<span>Безубыток при</span><span>${price(p.entry*(1+beAt(p)/100))} (+${beAt(p)}%)</span>`:""}
@@ -263,11 +268,12 @@ function mcard(p){const v=p.amt*p.cur/p.entry,pl=v-p.amt,pc=(p.cur/p.entry-1)*10
       <div class="acts"><button data-act="s50">Продать 50%</button><button data-act="s100">Продать всё</button><button data-act="edit">Стоп / цель</button>${p.stop===0&&!p.nostop?"":'<button data-act="be">🛡️ В безубыток</button>'}</div>
       <div class="row" style="margin-top:8px;font-size:13px"><a href="https://dexscreener.com/solana/${esc(p.addr)}" target="_blank" rel="noopener noreferrer">График DexScreener</a><a href="https://rugcheck.xyz/tokens/${esc(p.addr)}" target="_blank" rel="noopener noreferrer">RugCheck</a><a href="scanner.html#t=${esc(p.addr)}"${EMBED?' target="_top"':""}>Открыть в сканере</a></div>
     </div></details>`}
-function mclosed(p,pl){const R=reason({side:"sell",reason:p.reason}),k="c"+p.id;
+function mclosed(p,pl){const R=reason({side:"sell",reason:p.reason}),k="c"+p.id,got=p.amt+pl;
   return`<details class="tr" data-k="${esc(k)}"${op(k)}>
     <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${mtag(p)}</span><span class="pl">${sgn(pl)} ${pct((p.exit/p.entry-1)*100)}</span></div>
-      <div class="l2"><span>${R.ic} ${esc(R.t)}</span><span>${dt(p.closedAt)}</span></div></summary>
-    <div class="in"><div class="kv"><span>Вложено</span><span>${usd(p.amt)}</span><span>Вход → выход</span><span>${price(p.entry)} → ${price(p.exit)}</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Открыта</span><span>${dt(p.openedAt)}</span></div></div></details>`}
+      <div class="l2"><span>куплено на ${usd(p.amt)} → продано за ${usd(got)}</span><span>${dt(p.closedAt)}</span></div>
+      <div class="l2"><span>${R.ic} ${esc(R.t)}</span></div></summary>
+    <div class="in"><div class="kv"><span>Куплено на</span><span>${usd(p.amt)}</span><span>Получено после продажи</span><span>${usd(got)}</span><span>Результат</span><span>${sgn(pl)}</span><span>Вход → выход</span><span>${price(p.entry)} → ${price(p.exit)}</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Открыта</span><span>${dt(p.openedAt)}</span></div></div></details>`}
 
 /* ---------- крипта с плечом: карточки ---------- */
 const N=id=>+String($(id).value).replace(",",".");
@@ -280,12 +286,13 @@ const fstop=p=>{const m=p.dir*(p.stopPx/p.entry-1)*100;return!p.beDone?`стоп
 function fcard(p){const pl=fpl(p),k="f"+p.id,h=p.spark||[];
   return`<details class="tr" data-k="${esc(k)}" data-fid="${esc(p.id)}"${op(k)}>
     <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${ftag(p)}</span><span class="pl">${sgn(pl)} ${pct(pl/p.amt*100)}</span></div>
-      <div class="l2"><span>маржа ${usd(p.amt)} → ${usd(p.amt+pl)} · ${dur(now()-p.openedAt)}</span><span>${fstop(p)}</span></div></summary>
+      <div class="l2"><span>вложено ${usd(p.amt)} · сейчас ${usd(p.amt+pl)}</span><span>${fstop(p)}</span></div></summary>
     <div class="in">
       <div class="mut" style="font-size:12.5px">${esc(p.name)}</div>
       ${sparkSvg(h,p.entry,p.stopPx,h.length&&p.dir*(h[h.length-1][1]-p.entry)>=0)}
       <div class="kv">
-        <span>Маржа → сейчас</span><span>${usd(p.amt)} → ${usd(p.amt+pl)}</span>
+        <span>Вложено (маржа)</span><span>${usd(p.amt)}</span>
+        <span>Сейчас стоит</span><span>${usd(p.amt+pl)} (${sgn(pl)})</span>
         <span>Размер позиции</span><span>${usd(p.notional)} (x${p.lev})</span>
         <span>Вход → цена</span><span>${fpx(p.entry)} → ${fpx(p.cur)} (${fmove(p,p.cur)})</span>
         <span>Стоп</span><span>${p.beDone?'<span class="up">подтянут</span>':'<span class="dn">стоп-лосс</span>'} → ${fpx(p.stopPx)} (${fmove(p,p.stopPx)})</span>
@@ -300,13 +307,14 @@ function fcard(p){const pl=fpl(p),k="f"+p.id,h=p.spark||[];
 function fclosed(p){const R=freason({side:"sell",reason:p.reason}),k="c"+p.id;
   return`<details class="tr" data-k="${esc(k)}"${op(k)}>
     <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${ftag(p)}</span><span class="pl">${sgn(p.pnl)} ${pct(p.pnl/p.amt*100)}</span></div>
-      <div class="l2"><span>${R.ic} ${esc(R.t.replace(/^Плечо: /,""))}</span><span>${dt(p.closedAt)}</span></div></summary>
-    <div class="in"><div class="kv"><span>Маржа</span><span>${usd(p.amt)}</span><span>Размер позиции</span><span>${usd(p.notional)}</span><span>Вход → выход</span><span>${fpx(p.entry)} → ${fpx(p.exit)} (${fmove(p,p.exit)})</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Открыта</span><span>${dt(p.openedAt)}</span></div></div></details>`}
+      <div class="l2"><span>вложено ${usd(p.amt)} → вернулось ${usd(p.amt+p.pnl)}</span><span>${dt(p.closedAt)}</span></div>
+      <div class="l2"><span>${R.ic} ${esc(R.t.replace(/^Плечо: /,""))}</span></div></summary>
+    <div class="in"><div class="kv"><span>Вложено (маржа)</span><span>${usd(p.amt)}</span><span>Вернулось после закрытия</span><span>${usd(p.amt+p.pnl)}</span><span>Результат</span><span>${sgn(p.pnl)}</span><span>Размер позиции</span><span>${usd(p.notional)}</span><span>Вход → выход</span><span>${fpx(p.entry)} → ${fpx(p.exit)} (${fmove(p,p.exit)})</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Открыта</span><span>${dt(p.openedAt)}</span></div></div></details>`}
 function fled(e){const R=freason(e),buy=e.side==="buy";
   return`<div class="card"><div class="hd"><span>${buy?'<span class="up">🟢 Открытие</span>':'<span class="dn">🔴 Закрытие</span>'} <span class="sym">${esc(e.sym)}</span> <span class="tag">⚡ ${e.dir>0?"ЛОНГ":"ШОРТ"} x${e.lev}</span></span><span class="mut" style="font-size:12.5px">${dt(e.t)}</span></div>
     ${buy?"":`<div style="font-size:16px;font-weight:700;margin-top:3px">${sgn(e.pnl)} ${e.cost?pct(e.pnl/e.cost*100):""}</div>`}
     <div class="kv">
-      <span>${buy?"Маржа":"Вернулось на счёт"}</span><span>${usd(e.amt)}</span>
+      ${buy?`<span>Вложено (маржа)</span><span>${usd(e.amt)}</span>`:`<span>Вложено (маржа)</span><span>${usd(e.cost)}</span><span>Вернулось после закрытия</span><span>${usd(e.amt)}</span>`}
       <span>Размер позиции</span><span>${usd(e.notional)}</span>
       <span>Цена рынка → ваша</span><span>${fpx(e.mkt)} → ${fpx(e.px)}</span>
       <span>Комиссия / проскальзывание</span><span class="dn">${usd(e.fee)} / ${usd(e.slip)}</span>
@@ -315,6 +323,22 @@ function fled(e){const R=freason(e),buy=e.side==="buy";
     </div>
     <div class="rsn">${R.ic} <b>${esc(R.t)}</b>${R.d?`<small>${esc(R.d)}</small>`:""}</div>
   </div>`}
+
+/* ---------- бот как приложение на главном экране ---------- */
+let installEv=null;
+const standalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function installBox(home){
+  if(EMBED)return"";
+  if(standalone())return home?"":`<div class="msg" style="margin-top:10px">✅ Бот уже открыт как приложение с главного экрана.</div>`;
+  if(home&&(LS.get("a2hs","")==="1"||!(installEv||navigator.maxTouchPoints>0)))return"";
+  const how=isIOS?"откройте сайт в Safari, нажмите кнопку «Поделиться» <b>(квадрат со стрелкой вверх)</b> и выберите <b>«На экран “Домой”»</b>.":"откройте меню браузера <b>(⋮)</b> и выберите <b>«Добавить на главный экран»</b> или <b>«Установить приложение»</b>.";
+  return`<div class="${home?"box":""}"${home?"":' style="margin-top:12px"'}><b>📲 Бот на главном экране</b>
+    <div class="msg" style="margin-top:4px">${installEv?"Добавьте значок бота на главный экран — он будет открываться одним нажатием, как обычное приложение.":"Чтобы бот открывался одним нажатием, как приложение, "+how}</div>
+    ${installEv||home?`<div class="row" style="margin-top:8px">${installEv?'<button class="pri" data-act="install">📲 Добавить на главный экран</button>':""}${home?`<button data-act="a2hsx">${installEv?"Не сейчас":"Понятно"}</button>`:""}</div>`:""}</div>`;
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEv=e;if(S)render()});
+window.addEventListener("appinstalled",()=>{installEv=null;LS.set("a2hs","1");if(S)render(true);toast("Бот добавлен на главный экран")});
 
 /* ---------- отрисовка ---------- */
 function render(force){
@@ -397,7 +421,7 @@ function vHome(){
     </div>
     <div class="msg" style="margin-top:6px">Позиция = маржа × плечо. Стоп и цель — в процентах движения цены монеты: при плече x5 движение на 2% против вас — это −10% маржи.</div>
     <button class="pri" style="margin-top:10px;width:100%" data-act="fopen">Открыть в демо</button></details>`:"";
-  return acct+bots+list+`<div class="sec"><b>Открыть сделку вручную</b></div>`+buyForm+fForm;
+  return installBox(true)+acct+bots+list+`<div class="sec"><b>Открыть сделку вручную</b></div>`+buyForm+fForm;
 }
 function vHistory(){
   const T=S.totals,wr=T.sells?Math.round(T.wins/T.sells*100)+"%":"—";
@@ -410,9 +434,10 @@ function vHistory(){
   if(hv==="ledger")return seg+stats+`<div class="hint" style="margin-top:10px">Тетрадь — каждая покупка и продажа с ценами, комиссиями и причиной.</div>`+vLedger();
   const all=[...S.closed.map(p=>({k:"m",t:p.closedAt,pl:p.amt*(p.exit/p.entry-1),p})),...(FS?.closed||[]).map(p=>({k:"f",t:p.closedAt,pl:p.pnl,p}))].sort((a,b)=>b.t-a.t);
   const chip=(k,l)=>`<button data-hf="${k}" class="${hf===k?"on":""}">${l} <span class="mut">${all.filter(x=>k==="all"||x.k===k).length}</span></button>`;
-  const list=all.filter(x=>hf==="all"||x.k===hf),w=list.filter(x=>x.pl>0).length;
+  const list=all.filter(x=>hf==="all"||x.k===hf),w=list.filter(x=>x.pl>0).length,bought=list.reduce((s,x)=>s+x.p.amt,0),got=list.reduce((s,x)=>s+x.p.amt+x.pl,0);
   return seg+stats+`<div class="chips">${chip("all","Все")}${chip("m","🪙 Мемкоины")}${chip("f","⚡ Плечо")}</div>`
-    +(list.length?`<div class="hint">В списке ${list.length}: прибыльных ${w} (${Math.round(w/list.length*100)}%), итог ${sgn(list.reduce((s,x)=>s+x.pl,0))}. Нажмите на сделку — откроются подробности.</div>`+list.map(x=>x.k==="m"?mclosed(x.p,x.pl):fclosed(x.p)).join("")
+    +(list.length?`<div class="two" style="margin:0 0 8px"><div><i>Куплено на</i><b>${usd(bought)}</b></div><div><i>Получено после продаж</i><b>${usd(got)}</b> <span style="font-size:12.5px">${sgn(got-bought)}</span></div></div>
+      <div class="hint">В списке ${list.length} ${plural(list.length,"сделка","сделки","сделок")}, прибыльных ${w} (${Math.round(w/list.length*100)}%). Нажмите на сделку — откроются подробности.</div>`+list.map(x=>x.k==="m"?mclosed(x.p,x.pl):fclosed(x.p)).join("")
       :`<div class="empty">Закрытых сделок пока нет.</div>`)
     +(S.closed.length>=200?`<div class="mut" style="text-align:center;font-size:12.5px">Показаны последние сделки</div>`:"");
 }
@@ -424,7 +449,7 @@ function vLedger(){
     return`<div class="card"><div class="hd"><span>${buy?'<span class="up">🟢 Покупка</span>':'<span class="dn">🔴 Продажа</span>'} <span class="sym">${esc(e.sym)}</span></span><span class="mut" style="font-size:12.5px">${dt(e.t)}</span></div>
       ${buy?"":`<div style="font-size:16px;font-weight:700;margin-top:3px">${sgn(e.pnl)} ${e.cost?pct(e.pnl/e.cost*100):""}</div>`}
       <div class="kv">
-        <span>Сумма</span><span>${usd(e.amt)}</span>
+        ${buy?`<span>Куплено на</span><span>${usd(e.amt)}</span>`:`${e.cost?`<span>Куплено на</span><span>${usd(e.cost)}</span>`:""}<span>Получено после продажи</span><span>${usd(e.amt)}</span>`}
         <span>Цена рынка → ваша</span><span>${price(e.mkt)} → ${price(e.px)}</span>
         <span>Комиссия / проскальзывание</span><span class="dn">${usd(e.fee)} / ${usd(e.slip)}</span>
         <span>Стоп / цель</span><span>${stopTxt(e)}</span>
@@ -481,7 +506,7 @@ function renderSettings(){
   <details data-k="s4"${op("s4")}><summary>🔑 Доступ и приложение<span class="sm">код доступа, выход, значок на экране</span></summary>
     <div class="row" style="margin-top:10px"><label style="flex:1">Новый код доступа (от 6 символов)<input id="f_pin" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button data-act="setpin" style="align-self:end">Сменить код</button></div>
     <div class="row" style="margin-top:10px"><button data-act="logout">Выйти на этом устройстве</button>${EMBED?"":'<a href="scanner.html" style="margin-left:auto">Открыть сканер →</a>'}</div>
-    <div class="msg" style="margin-top:8px">💡 Чтобы открывать как приложение: в меню браузера выберите «На экран “Домой”» / «Добавить на главный экран».</div>
+    ${installBox(false)}
   </details>
   <details data-k="s5"${op("s5")}><summary>❓ Что значат слова<span class="sm">стоп, цель, безубыток, плечо, маржа, ликвидация</span></summary>
     <div class="gl" style="margin-top:10px">
@@ -529,6 +554,8 @@ async function act(a,el){
     else if(a==="setpin"){const np=$("f_pin").value.trim().toUpperCase();if(np.length<6){toast("Код должен быть от 6 символов",true);return}if(!confirm("Сменить код доступа на «"+np+"»? Запомните его — старый перестанет работать."))return;
       await call("setpin",{newPin:np});pin=np;LS.set("pin",pin);$("f_pin").value="";toast("Код доступа изменён");}
     else if(a==="logout"){logout("")}
+    else if(a==="install"){if(installEv){const ev=installEv;installEv=null;ev.prompt();const c=await ev.userChoice.catch(()=>null);if(c&&c.outcome==="accepted")LS.set("a2hs","1")}if(tab==="settings")renderSettings()}
+    else if(a==="a2hsx"){LS.set("a2hs","1")}
     if(S&&tab!=="settings")render(true);
   }catch(e){toast(e.message,true)}finally{if(el&&el.isConnected)el.disabled=false}
 }
@@ -554,6 +581,7 @@ async function login(){pin=$("pinIn").value.trim().toUpperCase();if(!pin)return;
 $("pinGo").onclick=login;$("pinIn").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 
 if(EMBED)$("toScan").hidden=true;
+else if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 setInterval(timer,1000);
 setInterval(()=>{if(pin&&S&&!document.hidden&&!(tab==="settings"&&formDirty))load(null,null,true).catch(()=>{})},20000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&pin&&S)load(null,null,true).catch(()=>{})});

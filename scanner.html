@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>Сканер мемкоинов Solana</title>
 <style>
   :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--text:#e6edf3;--mut:#8b949e;--g:#3fb950;--y:#d29922;--r:#f85149;--acc:#58a6ff}
@@ -411,7 +417,7 @@
   <div id="lReasons"></div>
   <div id="lCostNote" style="font-size:12.5px;color:var(--mut);margin-top:8px"></div>
   <h2>Записи</h2>
-  <div class="tblwrap"><table><thead><tr><th>Дата</th><th>Операция</th><th>Счёт</th><th>Токен</th><th>Цена рынка</th><th>Ваша цена</th><th style="text-align:left">Стоп / Цель</th><th>Кол-во токенов</th><th>Сумма</th><th>Комиссия</th><th>Проскальз.</th><th>Итог сделки</th><th style="text-align:left">Причина</th><th style="text-align:left">Заметка</th></tr></thead><tbody id="lRows"></tbody></table></div>
+  <div class="tblwrap"><table><thead><tr><th>Дата</th><th>Операция</th><th>Счёт</th><th>Токен</th><th>Цена рынка</th><th>Ваша цена</th><th style="text-align:left">Стоп / Цель</th><th>Кол-во токенов</th><th>Куплено на / получено</th><th>Комиссия</th><th>Проскальз.</th><th>Итог сделки</th><th style="text-align:left">Причина</th><th style="text-align:left">Заметка</th></tr></thead><tbody id="lRows"></tbody></table></div>
 </div>
 
 <div id="viewC" hidden><iframe id="cloudFrame" title="Бот 24/7" style="width:100%;height:calc(100vh - 62px);border:0;display:block;background:#0d1117"></iframe></div>
@@ -502,9 +508,9 @@
   </div>
   <div style="font-size:12px;color:var(--mut);margin-top:8px">Цены открытых сделок проверяются каждые 30 секунд, пока эта страница открыта (можно в фоновой вкладке). При стопе, цели, сливе ликвидности или продаже создателем прозвучит сигнал. Данные хранятся только в этом браузере, поэтому иногда сохраняйте копию.</div>
   <h2>Открытые сделки</h2>
-  <div class="tblwrap"><table><thead><tr><th>Токен</th><th>Вход</th><th>Сейчас</th><th>Вложено</th><th>Стоимость</th><th>Прибыль</th><th>Стоп, %</th><th>Цель, x</th><th>Состояние</th><th></th></tr></thead><tbody id="pfOpen"></tbody></table></div>
+  <div class="tblwrap"><table><thead><tr><th>Токен</th><th>Вход</th><th>Сейчас</th><th>Куплено на</th><th>Сейчас стоит</th><th>Прибыль</th><th>Стоп, %</th><th>Цель, x</th><th>Состояние</th><th></th></tr></thead><tbody id="pfOpen"></tbody></table></div>
   <h2>Журнал закрытых сделок</h2>
-  <div class="tblwrap"><table><thead><tr><th>Токен</th><th>Вход</th><th>Выход</th><th>Вложено</th><th>Итог, $</th><th>Итог, %</th><th>Держал</th><th>Закрыта</th><th></th></tr></thead><tbody id="pfClosed"></tbody></table></div>
+  <div class="tblwrap"><table><thead><tr><th>Токен</th><th>Вход</th><th>Выход</th><th>Куплено на</th><th>Продано за</th><th>Итог, $</th><th>Итог, %</th><th>Держал</th><th>Закрыта</th><th></th></tr></thead><tbody id="pfClosed"></tbody></table></div>
   <h2>Последние сигналы</h2>
   <div class="log" id="pfLog"></div>
 </div>
@@ -1452,7 +1458,7 @@ function renderL(){
       <td>${ACC[e.acc]||e.acc}</td>
       <td><span class="sym">${esc(e.sym)}</span></td>
       <td>${price(e.mkt)}</td><td>${price(e.px)}</td><td>${stopCell(e)}</td><td>${qty(e.qty)}</td>
-      <td>${usd(e.amt)}</td><td class="dn">${e.fee?usd(e.fee):"—"}</td><td class="dn">${e.slip?usd(e.slip):"—"}</td>
+      <td>${e.side==="sell"?`<span title="Получено после продажи">${usd(e.amt)}</span>${e.cost?`<div class="nm">куплено на ${usd(e.cost)}</div>`:""}`:usd(e.amt)}</td><td class="dn">${e.fee?usd(e.fee):"—"}</td><td class="dn">${e.slip?usd(e.slip):"—"}</td>
       <td>${e.side==="sell"?`${sgn(e.pnl)} ${pp!=null?pct(pp):""}`:'<span style="color:var(--mut)">—</span>'}</td>
       <td>${reasonHtml(e)}</td>
       <td style="text-align:left"><input class="lnote" value="${esc(e.note||"")}" placeholder="заметка…" style="width:180px;padding:3px 6px"></td></tr>`}).join("")
@@ -1497,6 +1503,7 @@ window.addEventListener("hashchange",openHash);
 function sizeCloud(){const fr=$("cloudFrame");if($("viewC").hidden)return;fr.style.height=Math.max(320,innerHeight-fr.getBoundingClientRect().top-scrollY)+"px"}
 window.addEventListener("resize",sizeCloud);
 $("bnScan").onclick=e=>{e.preventDefault();showView("scan");scrollTo(0,0)};
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 $("tabC").onclick=()=>{showView("c");const fr=$("cloudFrame");if(!fr.src)fr.src="index.html?embed=1";scrollTo(0,0);sizeCloud()};
 setInterval(cloudSync,45000);
 
@@ -1861,10 +1868,10 @@ function renderPf(){
       <td class="acts"><button data-act="info">Подробнее</button><button data-act="open">В сканере</button>${p.demo?'<button data-act="s50">Продать 50%</button><button data-act="s100">Продать всё</button>':'<button data-act="close">Продал</button><button data-act="del">✕</button>'}</td></tr>`}).join("")
     :`<tr><td colspan="10" class="empty">${isDemo?"Демо-позиций нет. Откройте токен в сканере и нажмите «🎮 Купить в демо».":"Нет открытых сделок. Откройте токен в сканере и нажмите «Я купил по-настоящему»."}</td></tr>`;
   $("pfClosed").innerHTML=closed.length?closed.slice().sort((a,b)=>b.closedAt-a.closedAt).map(p=>{const pl=closedPnl(p);
-    return`<tr data-id="${esc(p.id)}"><td><span class="sym">${esc(p.sym)}</span><div class="nm">${esc(p.reason||p.name)}</div></td><td>${price(p.entry)}</td><td>${price(p.exit)}</td><td>${usd(p.amt)}</td>
+    return`<tr data-id="${esc(p.id)}"><td><span class="sym">${esc(p.sym)}</span><div class="nm">${esc(p.reason||p.name)}</div></td><td>${price(p.entry)}</td><td>${price(p.exit)}</td><td>${usd(p.amt)}</td><td>${usd(p.amt+pl)}</td>
       <td>${sgn(pl)}</td><td>${pct(pl/(p.amt+(p.xfee||0))*100)}</td><td>${dur(p.closedAt-p.openedAt)}</td><td>${new Date(p.closedAt).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</td>
       <td class="acts"><button data-act="info">Подробнее</button><button data-act="del">✕</button></td></tr>`}).join("")
-    :`<tr><td colspan="9" class="empty">Закрытых сделок пока нет.</td></tr>`;
+    :`<tr><td colspan="10" class="empty">Закрытых сделок пока нет.</td></tr>`;
   if(tmId)openTrade(tmId,true);
   $("pfLog").innerHTML=pfLog.length?pfLog.slice(0,30).map(l=>`<div>${new Date(l.t).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})} · ${l.kind==="bad"?"🚨":l.kind==="good"?"💰":"ℹ️"} ${esc(l.msg)}</div>`).join(""):"Сигналов пока не было.";
 }
