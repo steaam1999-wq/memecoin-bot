@@ -221,7 +221,7 @@
     th.c-fav{width:30px} th.c-risk{width:22px} th.c-score{width:38px} th.c-price{width:80px} th.c-h24{width:60px} th.c-mom{width:28px}
     table:has(>#tb) .c-fav{padding-left:2px;padding-right:0;text-overflow:clip}
     th.c-mom{font-size:0}
-    th.c-mom::after{content:"🔥";font-size:11px}
+    th.c-mom::after{content:"";display:inline-block;width:13px;height:13px;vertical-align:-2px;background:#f0883e;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c1 3.5 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2 .8-3.4 2-4.5.3 1.6 1 2.5 2 3 .2-3-1-5.5 1-9z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c1 3.5 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2 .8-3.4 2-4.5.3 1.6 1 2.5 2 3 .2-3-1-5.5 1-9z'/%3E%3C/svg%3E") center/contain no-repeat}
     th.c-risk{font-size:0}
     th.c-risk::after{content:"●";font-size:11px}
     .c-sym,.c-sym *{text-align:left}
@@ -278,7 +278,7 @@
     .bnav a span{font-size:20px;line-height:1.25}
     .bnav a.on{background:#21262d;border-color:var(--line);color:var(--text)}
     #aiBtn{bottom:calc(82px + env(safe-area-inset-bottom));width:50px;height:50px;padding:0;border-radius:50%;font-size:0}
-    #aiBtn::before{content:"🤖";font-size:24px}
+    #aiBtn svg.i{width:26px;height:26px}
     #tabC{display:none}
     .legend{padding:7px 10px}
     main.withSide #sideWrap{padding-bottom:0}
@@ -289,6 +289,7 @@
 </style>
 </head>
 <body>
+<script src="icons.js"></script>
 <header>
   <h1>🔎 Сканер мемкоинов · Solana</h1>
   <nav class="tabs"><button id="tabScan" class="on">Монеты</button><button id="tabPf">Мои сделки <span id="pfCnt"></span><span id="botInd"></span></button><button id="tabW">Кошельки 🐋</button><button id="tabL">📒 Тетрадь</button><button id="tabC">🏠 Главная <span id="cloudCnt"></span></button></nav>
@@ -479,11 +480,11 @@
         <label title="Как часто бот просматривает рынок в поисках монет. 0 — как можно чаще (раз в 20 сек)">Проверять каждые, сек<input type="number" data-b="every" step="10" min="0" style="width:90px"></label>
         <label title="Сколько минут ждать после покупки, прежде чем купить следующую монету. 0 — без паузы">Пауза между покупками, мин<input type="number" data-b="gap" step="1" min="0" style="width:90px"></label>
         <label title="Чем выше риск, тем мягче проверки и тем больше монет бот покупает">Уровень риска бота<select data-b="lvl">
-          <option value="g">🛡️ Осторожный — только 🟢</option>
-          <option value="y">⚖️ Обычный — 🟢 и 🟡</option>
-          <option value="r">🔥 Рискованный — 🟢 🟡 🔴</option>
+          <option value="g">Осторожный — только зелёные</option>
+          <option value="y">Обычный — зелёные и жёлтые</option>
+          <option value="r">Рискованный — зелёные, жёлтые и красные</option>
           <option value="x">💀 Очень рискованный — почти всё</option></select></label>
-        <label>Динамика<select data-b="mom"><option value="up">🔥 или 📈</option><option value="hot">только 🔥</option><option value="any">любая, кроме ❄️</option></select></label>
+        <label>Динамика<select data-b="mom"><option value="up">ускоряется или растёт</option><option value="hot">только ускоряется</option><option value="any">любая, кроме затухающей</option></select></label>
       </div>
       <div style="font-size:12px;color:var(--mut);margin-top:6px">Любое поле можно поставить на <b>0</b>: лимиты (позиции, ликвидность, объём, возраст, время удержания) — <b>без ограничения</b>; стоп-лосс 0 — <b>без стопа</b>; цель 0 — <b>без цели</b>; сумма сделки 0 — бот <b>не покупает новые</b>, только ведёт открытые; проверка 0 — как можно чаще.</div>
       <div id="botRiskInfo" style="font-size:12.5px;margin-top:6px;padding:7px 10px;border-radius:6px;background:var(--bg);border:1px solid var(--line)"></div>
