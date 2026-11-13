@@ -176,6 +176,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const usd=v=>(v<0?"−$":"$")+Math.abs(+v||0).toFixed(2);
 const sgn=v=>`<span class="${v>0?"up":v<0?"dn":""}">${v>0?"+":""}${usd(v)}</span>`;
 const pct=v=>v==null||isNaN(v)?"—":`<span class="${v>0?"up":v<0?"dn":""}">${v>0?"+":""}${(+v).toFixed(1)}%</span>`;
+const tpS=tp=>"+"+Math.round((tp-1)*100)+"%"; // цель: множитель цены → процент прибыли
 const plain=v=>(v>0?"+":v<0?"−":"")+Math.abs(+v).toFixed(1)+"%";
 const plural=(n,a,b,c)=>{const m=n%100,k=n%10;return m>10&&m<20?c:k===1?a:k>=2&&k<=4?b:c};
 function money(n){if(n==null||isNaN(n))return"—";const a=Math.abs(n);return a>=1e9?"$"+(n/1e9).toFixed(2)+"B":a>=1e6?"$"+(n/1e6).toFixed(2)+"M":a>=1e3?"$"+(n/1e3).toFixed(1)+"K":"$"+(+n).toFixed(0)}
@@ -218,7 +219,6 @@ const RSN=[
   [/^авто: трейлинг-стоп/,"📈","Трейлинг-стоп","Цена отошла от максимума — бот продал и зафиксировал прибыль"],
   [/^авто: стоп в безубытке/,"🛡️","Стоп в безубытке","После цели стоп стоял на цене входа — цена вернулась, остаток продан"],
   [/^авто: стоп-лосс/,"🔻","Сработал стоп-лосс","Цена упала до заданного стоп-лосса"],
-  [/^авто: цель x?([\d.]+)/,"🎯","Достигнута цель x$1","Продана половина, чтобы зафиксировать прибыль"],
   [/^бот: вышло время удержания/,"⏱","Вышло время удержания","Бот держал монету максимальное время"],
   [/^бот: ликвидность упала вдвое/,"🚨","Ликвидность упала вдвое","Признак вывода денег из пула — бот вышел"],
   [/^бот: красный флаг — (.+)/,"🚨","Красный флаг: $1","Появился опасный признак — бот вышел"],
@@ -230,6 +230,8 @@ const RSN=[
 function reason(e){
   const r=e.reason||"";
   if(e.side==="buy"&&!r)return{ic:"🎮",t:"Ваша покупка",d:""};
+  const g=r.match(/^авто: цель (?:x([\d.]+)|(\+\d+%))/);
+  if(g)return{ic:"🎯",t:"Достигнута цель "+(g[2]||tpS(+g[1])),d:"Продана половина, чтобы зафиксировать прибыль"};
   for(const[re,ic,t,d]of RSN){const m=r.match(re);if(m)return{ic,t:t.replace("$1",m[1]||""),d:d.replace("$1",m[1]||"").replace("$2",m[2]||"")}}
   return{ic:"ℹ️",t:r||"—",d:""};
 }
@@ -238,7 +240,7 @@ function freason(e){
   if(e.reason==="вручную")return{ic:"✋",t:"Закрыто вручную",d:"Вы нажали «Закрыть сделку»"};
   return reason(e);
 }
-const stopTxt=o=>`${o.nostop||o.stop==null?'<span class="mut">без стопа</span>':o.tsl>0?`<span class="up">стоп подтянут</span> → ${price(o.tsl)} (${pct((o.tsl/o.entry-1)*100)})`:o.stop===0?'<span class="dn">стоп: безубыток</span> '+price(o.entry):`<span class="dn">стоп −${o.stop}%</span> → ${price(o.entry*(1-o.stop/100))}`} · ${o.tp>1?`<span class="up">цель x${o.tp}</span> → ${price(o.entry*o.tp)}`:'<span class="mut">без цели</span>'}`;
+const stopTxt=o=>`${o.nostop||o.stop==null?'<span class="mut">без стопа</span>':o.tsl>0?`<span class="up">стоп подтянут</span> → ${price(o.tsl)} (${pct((o.tsl/o.entry-1)*100)})`:o.stop===0?'<span class="dn">стоп: безубыток</span> '+price(o.entry):`<span class="dn">стоп −${o.stop}%</span> → ${price(o.entry*(1-o.stop/100))}`} · ${o.tp>1?`<span class="up">цель ${tpS(o.tp)}</span> → ${price(o.entry*o.tp)}`:'<span class="mut">без цели</span>'}`;
 
 /* ---------- мемкоины: карточки ---------- */
 function sparkSvg(h,entry,stop,up){
@@ -409,7 +411,7 @@ function vHome(){
       <label style="grid-column:1/-1">Адрес токена (mint)<input id="b_addr" placeholder="адрес токена Solana" autocomplete="off" spellcheck="false"></label>
       <label>Сумма, $<input id="b_amt" type="number" inputmode="decimal" value="50"></label>
       <label>Стоп-лосс, % (0 — без стопа)<input id="b_stop" type="number" inputmode="decimal" value="30"></label>
-      <label>Цель, x (0 — без цели)<input id="b_tp" type="number" inputmode="decimal" value="2" step="0.5"></label>
+      <label>Цель, % прибыли (0 — без цели)<input id="b_tp" type="number" inputmode="decimal" value="100" step="10"></label>
     </div><button class="pri" style="margin-top:10px;width:100%" data-act="buy">Купить в демо</button></details>`;
   const fForm=FS?`<details class="form" data-k="fo"${op("fo")}><summary>⚡ Открыть сделку с плечом</summary>
     <div class="grid2" style="margin-top:10px">
@@ -444,7 +446,7 @@ function vHistory(){
 }
 function vLedger(){
   if(!S.ledger.length)return`<div class="empty">Записей пока нет. Они появятся после первой покупки.</div>`;
-  const G=new Map();for(const e of S.ledger)if(e.side==="sell"){const R=e.kind==="fut"?freason(e):reason(e),k=R.t.replace(/ x[\d.]+$/,"").replace(/^Красный флаг:.*/,"Красный флаг");const g=G.get(k)||{ic:R.ic,n:0,pl:0};g.n++;g.pl+=+e.pnl||0;G.set(k,g)}
+  const G=new Map();for(const e of S.ledger)if(e.side==="sell"){const R=e.kind==="fut"?freason(e):reason(e),k=R.t.replace(/ (x[\d.]+|\+\d+%)$/,"").replace(/^Красный флаг:.*/,"Красный флаг");const g=G.get(k)||{ic:R.ic,n:0,pl:0};g.n++;g.pl+=+e.pnl||0;G.set(k,g)}
   const sum=G.size?`<div class="box" style="font-size:13.5px"><b class="mut">Причины продаж:</b><br>${[...G].sort((a,b)=>b[1].n-a[1].n).map(([k,g])=>`${g.ic} ${esc(k)}: ${g.n} шт., ${sgn(g.pl)}`).join("<br>")}</div>`:"";
   return sum+S.ledger.map(e=>{if(e.kind==="fut")return fled(e);const R=reason(e),buy=e.side==="buy";
     return`<div class="card"><div class="hd"><span>${buy?'<span class="up">🟢 Покупка</span>':'<span class="dn">🔴 Продажа</span>'} <span class="sym">${esc(e.sym)}</span></span><span class="mut" style="font-size:12.5px">${dt(e.t)}</span></div>
@@ -482,7 +484,7 @@ function renderSettings(){
       <div class="grid2">
         <label>Сумму считать<select id="f_amtMode"><option value="pct">в % от баланса</option><option value="usd">в долларах</option></select></label>
         ${F("pct","Сумма сделки, %")}${F("usd","Сумма сделки, $")}${F("maxPos","Макс. позиций")}
-        ${F("stop","Стоп-лосс, %")}${F("be","Стоп в безубыток при росте, %")}${F("trail","Трейлинг-стоп, % от максимума")}${F("tp","Цель, x",'step="0.5"')}${F("hold","Держать макс., ч")}
+        ${F("stop","Стоп-лосс, %")}${F("be","Стоп в безубыток при росте, %")}${F("trail","Трейлинг-стоп, % от максимума")}<label>Цель, % прибыли (от 10; 0 — без цели)<input id="f_tp" type="number" inputmode="decimal" min="0" step="5" value="${c.tp>1?Math.round((c.tp-1)*100):0}"></label>${F("hold","Держать макс., ч")}
         ${F("minLiq","Мин. ликвидность, $")}${F("minVol","Мин. объём 24ч, $")}${F("ageMin","Возраст от, ч")}${F("ageMax","Возраст до, ч")}
         <label>Динамика<select id="f_mom"><option value="up">ускоряется или растёт</option><option value="hot">только ускоряется</option><option value="any">любая, кроме затухающей</option></select></label>
       </div>
@@ -529,12 +531,14 @@ function renderSettings(){
   $("f_auto").value=c.auto?"1":"0";$("f_lvl").value=c.lvl;$("f_amtMode").value=c.amtMode;$("f_mom").value=c.mom;
   const sync=()=>{const a=$("f_auto").value==="1";$("manual").style.opacity=a?.4:1;$("manual").querySelectorAll("input,select").forEach(e=>e.disabled=a);
     $("riskTxt").innerHTML="<b>"+$("f_lvl").selectedOptions[0].textContent+":</b> "+RISKTXT[$("f_lvl").value]+" На любом уровне бот не покупает honeypot, рагпулл и токены, которые создатель может заморозить.";
-    $("autoTxt").innerHTML=a?"🤖 <b>Автоматически:</b> бот сам подбирает фильтры под рынок (от строгих к мягким, пока не найдёт 5 кандидатов, но не ниже границ уровня риска), стоп по волатильности монеты (15–45%), цель в 3 раза дальше стопа, сумму — чтобы при стопе терять 1,5–3% счёта (не больше 10% счёта на сделку). <b>Стоп переносится в безубыток</b>, когда прибыль сравняется с размером стопа (например, стоп −20% → безубыток при +20%), а дальше <b>подтягивается за ценой</b>: держится на 15–25% ниже максимума и фиксирует прибыль. Цены открытых сделок бот проверяет каждые ~15 секунд. До 6 позиций, держит до 24 ч.":"✋ <b>Вручную:</b> бот работает по полям выше. «Стоп в безубыток при росте» — на сколько процентов должна вырасти цена, чтобы стоп переехал на цену входа (0 — выключено). «Трейлинг-стоп» — после безубытка стоп держится на столько процентов ниже максимума цены и фиксирует прибыль (0 — выключено).";};
+    $("autoTxt").innerHTML=a?"🤖 <b>Автоматически:</b> бот сам подбирает фильтры под рынок (от строгих к мягким, пока не найдёт 5 кандидатов, но не ниже границ уровня риска), стоп по волатильности монеты (15–45%), цель в 3 раза дальше стопа (например, стоп −20% → цель +60%), сумму — чтобы при стопе терять 1,5–3% счёта (не больше 10% счёта на сделку). <b>Стоп переносится в безубыток</b>, когда прибыль сравняется с размером стопа (например, стоп −20% → безубыток при +20%), а дальше <b>подтягивается за ценой</b>: держится на 15–25% ниже максимума и фиксирует прибыль. Цены открытых сделок бот проверяет каждые ~15 секунд. До 6 позиций, держит до 24 ч.":"✋ <b>Вручную:</b> бот работает по полям выше. «Цель» — на сколько процентов должна вырасти цена, чтобы бот продал половину и зафиксировал прибыль (от 10%; 0 — без цели); следующая цель для остатка — вдвое дальше. «Стоп в безубыток при росте» — на сколько процентов должна вырасти цена, чтобы стоп переехал на цену входа (0 — выключено). «Трейлинг-стоп» — после безубытка стоп держится на столько процентов ниже максимума цены и фиксирует прибыль (0 — выключено).";};
   $("f_auto").onchange=sync;$("f_lvl").onchange=sync;sync();formDirty=false;
   $("view").querySelectorAll("input,select").forEach(e=>e.addEventListener("input",()=>formDirty=true));
 }
 function readCfg(){const c={auto:$("f_auto").value==="1",lvl:$("f_lvl").value,amtMode:$("f_amtMode").value,mom:$("f_mom").value};
-  for(const k of["every","gap","pct","usd","maxPos","stop","be","trail","tp","hold","minLiq","minVol","ageMin","ageMax"])c[k]=+String($("f_"+k).value).replace(",",".");return c}
+  for(const k of["every","gap","pct","usd","maxPos","stop","be","trail","hold","minLiq","minVol","ageMin","ageMax"])c[k]=+String($("f_"+k).value).replace(",",".");
+  const t=N("f_tp");c.tp=t>0?1+Math.max(10,t)/100:0; // цель хранится как множитель цены, не меньше +10%
+  return c}
 
 /* ---------- действия ---------- */
 async function act(a,el){
@@ -542,15 +546,15 @@ async function act(a,el){
   const fid=el.closest("[data-fid]")?.dataset.fid,fp=fid&&FS?.open.find(x=>x.id===fid);
   try{
     if(a==="s50"||a==="s100"){if(!confirm(`Продать ${a==="s50"?"половину":"всю позицию"} ${p.sym} по текущей цене?`))return;el.disabled=true;await load("sell",{id,frac:a==="s50"?0.5:1});toast("Продано");}
-    else if(a==="edit"){const be=p.stop===0&&!p.nostop;const st=prompt(be?`Стоп ${p.sym} сейчас в безубытке и подтягивается за ценой. Оставьте поле пустым, чтобы его не менять, или введите новый стоп, % от входа (0 — без стопа):`:`Стоп-лосс для ${p.sym}, % от входа (0 — без стопа):`,be?"":p.nostop||p.stop==null?"0":String(p.stop));if(st==null)return;const tp=prompt(`Цель для ${p.sym}, во сколько раз (например 2; 0 — без цели):`,String(p.tp||0));if(tp==null)return;
-      const x={id,tp:+String(tp).replace(",",".")};if(String(st).trim()!=="")x.stop=+String(st).replace(",",".");await load("edit",x);toast("Сохранено");}
+    else if(a==="edit"){const be=p.stop===0&&!p.nostop;const st=prompt(be?`Стоп ${p.sym} сейчас в безубытке и подтягивается за ценой. Оставьте поле пустым, чтобы его не менять, или введите новый стоп, % от входа (0 — без стопа):`:`Стоп-лосс для ${p.sym}, % от входа (0 — без стопа):`,be?"":p.nostop||p.stop==null?"0":String(p.stop));if(st==null)return;const tp=prompt(`Цель для ${p.sym}, % прибыли от цены входа (например 50; 0 — без цели):`,String(p.tp>1?Math.round((p.tp-1)*100):0));if(tp==null)return;const tv=+String(tp).replace(",",".");
+      const x={id,tp:tv>0?1+tv/100:0};if(String(st).trim()!=="")x.stop=+String(st).replace(",",".");await load("edit",x);toast("Сохранено");}
     else if(a==="be"){if(!confirm(`Перенести стоп ${p.sym} на цену входа (${p.cur>=p.entry?"сейчас цена выше входа":"сейчас цена НИЖЕ входа — позиция продастся при следующей проверке"})?`))return;el.disabled=true;await load("edit",{id,be:true});toast("Стоп перенесён в безубыток");}
-    else if(a==="buy"){el.disabled=true;await load("buy",{addr:$("b_addr").value.trim(),amt:+$("b_amt").value,stop:+$("b_stop").value,tp:+$("b_tp").value});OPEN.delete("fb");toast("Куплено в демо");}
+    else if(a==="buy"){el.disabled=true;await load("buy",{addr:$("b_addr").value.trim(),amt:+$("b_amt").value,stop:+$("b_stop").value,tp:N("b_tp")>0?1+N("b_tp")/100:0});OPEN.delete("fb");toast("Куплено в демо");}
     else if(a==="fclose"){if(!confirm(`Закрыть ${fp.sym} ${fdir(fp)} x${fp.lev} по текущей цене?`))return;el.disabled=true;await fload("close",{id:fid});toast("Сделка закрыта");}
     else if(a==="fopen"){el.disabled=true;await fload("open",{sym:$("o_sym").value,dir:$("o_dir").value,margin:N("o_margin"),lev:N("o_lev"),stop:N("o_stop"),tp:N("o_tp")});OPEN.delete("fo");toast("Сделка открыта в демо");}
     else if(a==="tick"){el.disabled=true;el.textContent="🔎 Проверяю рынок… до минуты";const ft=call("tick",null,FAPI).then(x=>{FS=x}).catch(()=>{});await load("tick");await ft;toast("Проверка завершена");}
     else if(a==="fsave"){el.disabled=true;await fload("save",{cfg:{on:$("g_on").value==="1",dirs:$("g_dirs").value,lev:N("g_lev"),risk:N("g_risk"),maxPos:N("g_maxPos"),tp:N("g_tp"),hold:N("g_hold")}});formDirty=false;renderSettings();toast("Настройки крипты сохранены");}
-    else if(a==="save"){el.disabled=true;await load("save",{cfg:readCfg()});formDirty=false;renderSettings();toast("Настройки сохранены");}
+    else if(a==="save"){el.disabled=true;const low=N("f_tp")>0&&N("f_tp")<10;await load("save",{cfg:readCfg()});formDirty=false;renderSettings();toast(low?"Цель меньше 10% поставить нельзя — сохранено 10%":"Настройки сохранены");}
     else if(a==="reset"){if(!confirm("Начать демо заново? Все сделки, тетрадь и события будут удалены."))return;await load("reset",{start:+$("f_start").value||1000});formDirty=false;renderSettings();toast("Демо-счёт начат заново");}
     else if(a==="setpin"){const np=$("f_pin").value.trim().toUpperCase();if(np.length<6){toast("Код должен быть от 6 символов",true);return}if(!confirm("Сменить код доступа на «"+np+"»? Запомните его — старый перестанет работать."))return;
       await call("setpin",{newPin:np});pin=np;LS.set("pin",pin);$("f_pin").value="";toast("Код доступа изменён");}
