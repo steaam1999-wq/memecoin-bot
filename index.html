@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Мемкоин-бот">
+<meta name="apple-mobile-web-app-title" content="Торговый бот">
 <meta name="theme-color" content="#0d1117">
 <meta name="robots" content="noindex">
-<title>Мемкоин-бот 24/7</title>
+<title>Торговый бот 24/7</title>
 <style>
   :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--text:#e6edf3;--mut:#8b949e;--g:#3fb950;--y:#d29922;--r:#f85149;--acc:#58a6ff}
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
-  .wrap{max-width:920px;margin:0 auto;padding:12px 12px 90px}
+  .wrap{max-width:760px;margin:0 auto;padding:12px 12px 90px}
   h1{font-size:18px;margin:0}
   h2{font-size:15px;margin:18px 0 8px}
   a{color:var(--acc);text-decoration:none}
@@ -24,12 +24,9 @@
   button.danger{background:#3d1214;border-color:#8e1519;color:#ffb3ae}
   button:disabled{opacity:.5}
   .up{color:var(--g)} .dn{color:var(--r)} .mut{color:var(--mut)}
-  .top{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
-  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#555;margin-right:6px;vertical-align:middle}
-  .dot.on{background:var(--g);box-shadow:0 0 0 0 rgba(63,185,80,.6);animation:pl 2s infinite}
-  .dot.bad{background:var(--r)}
-  @keyframes pl{70%{box-shadow:0 0 0 8px rgba(63,185,80,0)}100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}}
+  .top{display:flex;align-items:center;gap:10px;justify-content:space-between;position:sticky;top:0;z-index:6;background:var(--bg);padding:8px 0;margin-bottom:4px}
   .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+  .alertbox{background:#3d1214;border:1px solid #8e1519;color:#ffb3ae;border-radius:10px;padding:9px 12px;margin-bottom:10px;font-size:14px}
   .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
   @media(min-width:640px){.stats{grid-template-columns:repeat(4,1fr)}}
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
@@ -43,15 +40,58 @@
   label input,label select{width:100%}
   details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
   summary{cursor:pointer;font-weight:600}
-  .tabs{display:flex;gap:6px;overflow-x:auto;margin:14px 0 10px;padding-bottom:2px}
+  summary .sm{display:block;font-weight:400;font-size:12.5px;color:var(--mut);margin:2px 0 0 18px}
+  details.plain{background:none;border:0;padding:0;margin:8px 0 0}
+  details.plain summary{font-weight:400;font-size:13px;color:var(--acc)}
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin:6px 0 12px;padding-bottom:2px}
   .tabs button{white-space:nowrap;background:none;border-color:transparent;color:var(--mut)}
   .tabs button.on{background:#21262d;border-color:var(--line);color:var(--text)}
+  .tabs .ic{margin-right:4px}
+  /* счёт */
+  .total{font-size:32px;font-weight:800;line-height:1.15;margin:2px 0 4px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .two>div{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+  .two i{display:block;font-style:normal;font-size:12px;color:var(--mut)}
+  .two b{font-size:16px}
+  /* боты и выключатели */
+  .bot{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .bot b{font-size:15px}
+  .sw{display:block;position:relative;flex:none;width:52px;height:30px;margin-top:2px}
+  .sw input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;padding:0;cursor:pointer;z-index:1}
+  .sw span{position:absolute;inset:0;background:#3a414a;border-radius:30px;transition:background .15s}
+  .sw span::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#e6edf3;transition:left .15s}
+  .sw input:checked+span{background:#238636}
+  .sw input:checked+span::after{left:25px}
+  hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+  .sec{display:flex;align-items:baseline;gap:7px;margin:16px 2px 6px;font-size:15px}
+  .hint{font-size:12px;color:var(--mut);margin:0 2px 7px}
+  /* сделки: строка, которая раскрывается */
+  details.tr{padding:0;margin-bottom:8px;overflow:hidden}
+  details.tr>summary{position:relative;list-style:none;font-weight:400;padding:10px 30px 10px 12px}
+  details.tr>summary::-webkit-details-marker{display:none}
+  details.tr>summary::after{content:"›";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:20px;transition:transform .15s}
+  details.tr[open]>summary::after{transform:translateY(-50%) rotate(90deg)}
+  details.tr[open]>summary{border-bottom:1px solid var(--line)}
+  details.tr>.in{padding:4px 12px 12px}
+  .l1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .l1>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .l1 .pl{font-weight:700;white-space:nowrap}
+  .l2{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut);margin-top:2px}
+  .l2>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .l2>span:last-child{white-space:nowrap}
+  .sym{font-weight:700;font-size:16px}
+  .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:10px}
+  .seg button{flex:1;background:none;border:0;color:var(--mut);padding:8px;border-radius:8px;font-size:15px}
+  .seg button.on{background:#21262d;color:var(--text);font-weight:600}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 8px}
+  .chips button{padding:6px 12px;border-radius:20px;font-size:13.5px;background:none;color:var(--mut)}
+  .chips button.on{background:#21262d;color:var(--text);border-color:var(--acc)}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:8px}
   .card .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-  .card .sym{font-weight:700;font-size:16px}
   .tag{font-size:11px;padding:2px 7px;border-radius:20px;background:#21262d;color:var(--mut);white-space:nowrap}
-  .kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13.5px;margin-top:6px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13.5px;margin-top:6px}
   .kv span:nth-child(odd){color:var(--mut)}
+  .kv span:nth-child(even){text-align:right}
   .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
   .acts button{flex:1;min-width:110px;padding:8px}
   .msg{font-size:13px;color:var(--mut);line-height:1.5;word-break:break-word}
@@ -60,37 +100,33 @@
   .rsn small{display:block;color:var(--mut);font-size:12.5px}
   .ev{padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
   .ev small{color:var(--mut);display:block;font-size:11.5px}
-  .empty{padding:26px 10px;text-align:center;color:var(--mut)}
+  .gl p{margin:0 0 7px;font-size:13.5px;line-height:1.45}
+  .empty{padding:22px 10px;text-align:center;color:var(--mut)}
   .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1c2128;border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:14px;z-index:9;max-width:92vw;box-shadow:0 8px 24px #000a}
   .toast.err{border-color:#8e1519;color:#ffb3ae}
+  .warnbox{background:#2b2000;border:1px solid #6e4b00;color:#f0d58a;border-radius:8px;padding:8px 10px;font-size:13px;margin-top:8px}
   #login{max-width:380px;margin:12vh auto 0;padding:0 16px;text-align:center}
   #login input{width:100%;text-align:center;font-size:20px;letter-spacing:.08em;text-transform:uppercase;margin:14px 0 10px}
   svg.sp{display:block;width:100%;height:44px;margin-top:8px}
   sub{font-size:.7em}
-  .top{position:sticky;top:0;z-index:6;background:var(--bg);padding:8px 0;margin-bottom:4px}
-  details.plain{background:none;border:0;padding:0;margin:8px 0 0}
-  details.plain summary{font-weight:400;font-size:13px;color:var(--acc)}
-  .tabs .ic{margin-right:4px}
-  #tickNow{width:100%}
   @media(max-width:640px){
     .wrap{padding:6px 10px calc(86px + env(safe-area-inset-bottom))}
     h1{font-size:17px}
     .tabs{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(22,27,34,.96);border-top:1px solid var(--line);z-index:8;gap:2px;overflow:visible;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-    .tabs button{flex:1;min-width:0;padding:5px 2px;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:8px;white-space:nowrap}
-    .tabs .ic{font-size:19px;margin:0}
+    .tabs button{flex:1;min-width:0;padding:5px 2px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:8px;white-space:nowrap}
+    .tabs .ic{font-size:20px;margin:0}
     .toast{bottom:calc(78px + env(safe-area-inset-bottom))}
     .stat b{font-size:16px}
     .acts button{min-width:0;padding:11px 6px;font-size:15px}
     .kv{font-size:13px}
     .grid2{grid-template-columns:1fr 1fr}
   }
-  .warnbox{background:#2b2000;border:1px solid #6e4b00;color:#f0d58a;border-radius:8px;padding:8px 10px;font-size:13px;margin-top:8px}
 </style>
 </head>
 <body>
 
 <div id="login" hidden>
-  <h1 style="font-size:22px">🤖 Мемкоин-бот 24/7</h1>
+  <h1 style="font-size:22px">🤖 Торговый бот 24/7</h1>
   <p class="mut">Введите код доступа</p>
   <input id="pinIn" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">
   <button class="pri big" id="pinGo">Войти</button>
@@ -99,27 +135,14 @@
 
 <div class="wrap" id="app" hidden>
   <div class="top">
-    <h1>🤖 Мемкоин-бот 24/7</h1>
+    <h1>🤖 Торговый бот</h1>
     <span class="row"><a id="toScan" href="scanner.html" style="font-size:14px">🔎 Сканер</a><button id="refresh" title="Обновить">↻</button></span>
   </div>
-
-  <div class="box">
-    <div id="health" style="font-size:14px;margin-bottom:8px"></div>
-    <button class="big" id="toggle"></button>
-    <div id="timer" class="msg" style="margin-top:8px"></div>
-    <div id="auto" class="msg" style="margin-top:6px"></div>
-    <div id="fline" class="msg" style="margin-top:6px"></div>
-    <details class="plain" id="infoBox"><summary>Подробности последней проверки</summary><div id="info" class="msg" style="margin-top:6px"></div></details>
-    <div class="row" style="margin-top:8px"><button id="tickNow">▶ Проверить рынок сейчас</button></div>
-  </div>
-
-  <div class="stats" id="stats"></div>
-
+  <div id="alert" class="alertbox" hidden></div>
   <div class="tabs" id="tabs">
-    <button data-t="open"><span class="ic">📂</span>Открытые</button>
-    <button data-t="closed"><span class="ic">✅</span>Закрытые</button>
-    <button data-t="ledger"><span class="ic">📒</span>Тетрадь</button>
-    <button data-t="events"><span class="ic">🔔</span>Сигналы</button>
+    <button data-t="home"><span class="ic">🏠</span>Главная</button>
+    <button data-t="history"><span class="ic">📜</span>История</button>
+    <button data-t="events"><span class="ic">🔔</span>События</button>
     <button data-t="settings"><span class="ic">⚙️</span>Настройки</button>
   </div>
   <div id="view"></div>
@@ -130,18 +153,22 @@
 <script>
 "use strict";
 const API="https://gqnzktvbkgilreoqaggr.supabase.co/functions/v1/bot";
+const FAPI=API.replace(/bot$/,"fut");
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem("mb_"+k);return v==null?d:v}catch{return d}},set(k,v){try{localStorage.setItem("mb_"+k,v)}catch{}},del(k){try{localStorage.removeItem("mb_"+k)}catch{}}};
 const EMBED=new URLSearchParams(location.search).has("embed");
-const FAPI=API.replace(/bot$/,"fut");
-let FS=null;
-let pin=LS.get("pin",""),S=null,tab=LS.get("tab","open"),off=0,busy=false,formDirty=false;
+let pin=LS.get("pin",""),S=null,FS=null,off=0,busy=false,formDirty=false;
+let tab=LS.get("tab","home");tab=({open:"home",closed:"history",ledger:"history"})[tab]||tab;if(!["home","history","events","settings"].includes(tab))tab="home";
+let hv=LS.get("hv","trades")==="ledger"?"ledger":"trades",hf=["all","m","f"].includes(LS.get("hf","all"))?LS.get("hf","all"):"all";
+const OPEN=new Set(),op=k=>OPEN.has(k)?" open":""; // какие карточки и разделы раскрыты
 
 /* ---------- helpers ---------- */
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const usd=v=>(v<0?"−$":"$")+Math.abs(+v||0).toFixed(2);
 const sgn=v=>`<span class="${v>0?"up":v<0?"dn":""}">${v>0?"+":""}${usd(v)}</span>`;
 const pct=v=>v==null||isNaN(v)?"—":`<span class="${v>0?"up":v<0?"dn":""}">${v>0?"+":""}${(+v).toFixed(1)}%</span>`;
+const plain=v=>(v>0?"+":v<0?"−":"")+Math.abs(+v).toFixed(1)+"%";
+const plural=(n,a,b,c)=>{const m=n%100,k=n%10;return m>10&&m<20?c:k===1?a:k>=2&&k<=4?b:c};
 function money(n){if(n==null||isNaN(n))return"—";const a=Math.abs(n);return a>=1e9?"$"+(n/1e9).toFixed(2)+"B":a>=1e6?"$"+(n/1e6).toFixed(2)+"M":a>=1e3?"$"+(n/1e3).toFixed(1)+"K":"$"+(+n).toFixed(0)}
 function price(p){p=+p;if(!p)return"—";if(p>=1)return"$"+p.toFixed(3);const m=p.toFixed(14).match(/^0\.(0*)(\d{1,4})/);if(!m)return"$"+p.toPrecision(4);return m[1].length>=4?`$0.0<sub>${m[1].length}</sub>${m[2]}`:"$"+p.toPrecision(4)}
 function dur(ms){const m=ms/6e4;if(m<1)return"меньше минуты";if(m<60)return Math.round(m)+" мин";const h=m/60;return h<48?h.toFixed(1)+" ч":Math.round(h/24)+" дн"}
@@ -160,72 +187,17 @@ async function call(action,extra,url){
   if(d.error)throw new Error(d.error);
   return d;
 }
-function logout(msg){pin="";LS.del("pin");S=null;$("app").hidden=true;$("login").hidden=false;$("loginErr").textContent=msg||"";}
+function logout(msg){pin="";LS.del("pin");S=null;FS=null;$("app").hidden=true;$("login").hidden=false;$("loginErr").textContent=msg||"";}
 async function load(action,extra,quiet){
-  if(busy)return;busy=true;$("refresh").disabled=true;
+  if(busy){if(!action)return;while(busy)await new Promise(r=>setTimeout(r,120))} // действие ждёт, фоновое обновление пропускается
+  busy=true;$("refresh").disabled=true;
   try{const[d,fs]=await Promise.all([call(action||"state",extra),call("state",null,FAPI).catch(()=>null)]);S=d;if(fs)FS=fs;off=d.now-Date.now();$("login").hidden=true;$("app").hidden=false;render();if(d.note)toast(d.note);return d}
   catch(e){if(!quiet)toast(e.message,true);throw e}
   finally{busy=false;$("refresh").disabled=false}
 }
-
 async function fload(action,extra){FS=await call(action,extra,FAPI);if(FS.note)toast(FS.note);await load(null,null,true).catch(()=>{})}
 
-/* ---------- крипта с плечом ---------- */
-const N=id=>+String($(id).value).replace(",",".");
-const fpx=v=>{v=+v;return!v?"—":"$"+(v>=1000?v.toFixed(1):v>=1?v.toFixed(3):v.toPrecision(4))};
-const fpl=p=>Math.max(-p.amt,p.notional*p.dir*(p.cur/p.entry-1)-p.notional*0.001);
-const fdir=p=>p.dir>0?"ЛОНГ":"ШОРТ";
-const ftag=p=>`<span class="tag">⚡ ${fdir(p)} x${p.lev} · ${p.bot?"🤖 бот":"🎮 вручную"}</span>`;
-const fmove=(p,v)=>pct(p.dir*(v/p.entry-1)*100);
-function fspark(p){
-  const h=p.spark||[];if(h.length<3)return"";
-  const ys=h.map(x=>x[1]),lv=[p.entry,p.stopPx],mn=Math.min(...ys,...lv),mx=Math.max(...ys,...lv),W=300,H=44,x0=h[0][0],x1=h[h.length-1][0]||x0+1;
-  const X=t=>((t-x0)/(x1-x0||1)*W).toFixed(1),Y=v=>(mx===mn?H/2:H-3-(v-mn)/(mx-mn)*(H-6)).toFixed(1),up=p.dir*(ys[ys.length-1]-p.entry)>=0;
-  return`<svg class="sp" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${Y(p.entry)}" y2="${Y(p.entry)}" stroke="#58a6ff" stroke-dasharray="4 4" stroke-width="1"/><line x1="0" x2="${W}" y1="${Y(p.stopPx)}" y2="${Y(p.stopPx)}" stroke="#f85149" stroke-dasharray="4 4" stroke-width="1"/><polyline points="${h.map(x=>X(x[0])+","+Y(x[1])).join(" ")}" fill="none" stroke="${up?"#3fb950":"#f85149"}" stroke-width="1.8"/></svg>`;
-}
-function fcard(p){const pl=fpl(p);
-  return`<div class="card" data-fid="${esc(p.id)}">
-    <div class="hd"><span><span class="sym">${esc(p.sym)}</span> <span class="mut" style="font-size:12.5px">${esc(p.name)}</span></span>${ftag(p)}</div>
-    <div style="font-size:18px;font-weight:700;margin-top:4px">${sgn(pl)} ${pct(pl/p.amt*100)}</div>
-    ${fspark(p)}
-    <div class="kv">
-      <span>Маржа → сейчас</span><span>${usd(p.amt)} → ${usd(p.amt+pl)}</span>
-      <span>Размер позиции</span><span>${usd(p.notional)} (x${p.lev})</span>
-      <span>Вход → цена</span><span>${fpx(p.entry)} → ${fpx(p.cur)} (${fmove(p,p.cur)})</span>
-      <span>Стоп</span><span>${p.beDone?'<span class="up">подтянут</span>':'<span class="dn">стоп-лосс</span>'} → ${fpx(p.stopPx)} (${fmove(p,p.stopPx)})</span>
-      <span>Цель</span><span>${p.tpPx?`${fpx(p.tpPx)} (${fmove(p,p.tpPx)})`:'<span class="mut">без цели</span>'}</span>
-      <span>Ликвидация</span><span>${fpx(p.liqPx)}</span>
-      <span>Открыта</span><span>${dur(now()-p.openedAt)} назад${p.upd?` · цена ${dur(now()-p.upd)} назад`:""}</span>
-    </div>
-    ${p.why?`<div class="rsn">🤖 <small style="display:inline">Сигнал: ${esc(p.why.replace(/^бот: /,""))}</small></div>`:""}
-    <div class="acts"><button data-act="fclose">Закрыть сделку</button></div>
-    <div class="row" style="margin-top:8px;font-size:13px"><a href="https://www.tradingview.com/chart/?symbol=BINANCE:${esc(p.sym)}USDT.P" target="_blank" rel="noopener noreferrer">График TradingView</a></div>
-  </div>`}
-function fclosedCard(p){const R=freason({side:"sell",reason:p.reason});
-  return`<div class="card"><div class="hd"><span class="sym">${esc(p.sym)}</span>${ftag(p)}</div>
-    <div style="font-size:17px;font-weight:700;margin-top:3px">${sgn(p.pnl)} ${pct(p.pnl/p.amt*100)}</div>
-    <div class="rsn">${R.ic} <b>${esc(R.t)}</b></div>
-    <div class="kv"><span>Маржа</span><span>${usd(p.amt)}</span><span>Размер позиции</span><span>${usd(p.notional)}</span><span>Вход → выход</span><span>${fpx(p.entry)} → ${fpx(p.exit)} (${fmove(p,p.exit)})</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Закрыта</span><span>${dt(p.closedAt)}</span></div></div>`}
-function freason(e){
-  if(e.side==="buy"&&!e.reason)return{ic:"🎮",t:"Вы открыли сделку",d:""};
-  if(e.reason==="вручную")return{ic:"✋",t:"Закрыто вручную",d:"Вы нажали «Закрыть сделку»"};
-  return reason(e);
-}
-function fled(e){const R=freason(e),buy=e.side==="buy";
-  return`<div class="card"><div class="hd"><span>${buy?'<span class="up">🟢 Открытие</span>':'<span class="dn">🔴 Закрытие</span>'} <span class="sym">${esc(e.sym)}</span> <span class="tag">⚡ ${e.dir>0?"ЛОНГ":"ШОРТ"} x${e.lev}</span></span><span class="mut" style="font-size:12.5px">${dt(e.t)}</span></div>
-    ${buy?"":`<div style="font-size:16px;font-weight:700;margin-top:3px">${sgn(e.pnl)} ${e.cost?pct(e.pnl/e.cost*100):""}</div>`}
-    <div class="kv">
-      <span>${buy?"Маржа":"Вернулось на счёт"}</span><span>${usd(e.amt)}</span>
-      <span>Размер позиции</span><span>${usd(e.notional)}</span>
-      <span>Цена рынка → ваша</span><span>${fpx(e.mkt)} → ${fpx(e.px)}</span>
-      <span>Комиссия / проскальзывание</span><span class="dn">${usd(e.fee)} / ${usd(e.slip)}</span>
-      ${!buy&&Math.abs(e.fund||0)>=0.005?`<span>Плата за удержание</span><span>${sgn(-e.fund)}</span>`:""}
-      <span>Стоп / цель</span><span>${fpx(e.stopPx)} / ${e.tpPx?fpx(e.tpPx):"—"}</span>
-    </div>
-    <div class="rsn">${R.ic} <b>${esc(R.t)}</b>${R.d?`<small>${esc(R.d)}</small>`:""}</div>
-  </div>`}
-
-/* ---------- reasons ---------- */
+/* ---------- причины сделок ---------- */
 const RSN=[
   [/^плечо: цель/,"💰","Плечо: достигнута цель","Цена дошла до цели — сделка закрыта с прибылью"],
   [/^плечо: трейлинг-стоп/,"📈","Плечо: трейлинг-стоп","Цена отошла от лучшего значения — прибыль зафиксирована"],
@@ -252,67 +224,165 @@ function reason(e){
   for(const[re,ic,t,d]of RSN){const m=r.match(re);if(m)return{ic,t:t.replace("$1",m[1]||""),d:d.replace("$1",m[1]||"").replace("$2",m[2]||"")}}
   return{ic:"ℹ️",t:r||"—",d:""};
 }
+function freason(e){
+  if(e.side==="buy"&&!e.reason)return{ic:"🎮",t:"Вы открыли сделку",d:""};
+  if(e.reason==="вручную")return{ic:"✋",t:"Закрыто вручную",d:"Вы нажали «Закрыть сделку»"};
+  return reason(e);
+}
 const stopTxt=o=>`${o.nostop||o.stop==null?'<span class="mut">без стопа</span>':o.tsl>0?`<span class="up">стоп подтянут</span> → ${price(o.tsl)} (${pct((o.tsl/o.entry-1)*100)})`:o.stop===0?'<span class="dn">стоп: безубыток</span> '+price(o.entry):`<span class="dn">стоп −${o.stop}%</span> → ${price(o.entry*(1-o.stop/100))}`} · ${o.tp>1?`<span class="up">цель x${o.tp}</span> → ${price(o.entry*o.tp)}`:'<span class="mut">без цели</span>'}`;
 
-/* ---------- render ---------- */
-function spark(p){
-  const h=p.spark||[];if(h.length<3)return"";
-  const xs=h.map(x=>x[0]),ys=h.map(x=>x[1]),lv=[p.entry];
-  if(!p.nostop&&p.stop!=null)lv.push(p.entry*(1-p.stop/100));
-  const mn=Math.min(...ys,...lv),mx=Math.max(...ys,...lv),W=300,H=44,x0=xs[0],x1=xs[xs.length-1]||x0+1;
+/* ---------- мемкоины: карточки ---------- */
+function sparkSvg(h,entry,stop,up){
+  if(h.length<3)return"";
+  const ys=h.map(x=>x[1]),lv=stop!=null?[entry,stop]:[entry],mn=Math.min(...ys,...lv),mx=Math.max(...ys,...lv),W=300,H=44,x0=h[0][0],x1=h[h.length-1][0]||x0+1;
   const X=t=>((t-x0)/(x1-x0||1)*W).toFixed(1),Y=v=>(mx===mn?H/2:H-3-(v-mn)/(mx-mn)*(H-6)).toFixed(1);
-  const up=ys[ys.length-1]>=p.entry;
-  return`<svg class="sp" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${Y(p.entry)}" y2="${Y(p.entry)}" stroke="#58a6ff" stroke-dasharray="4 4" stroke-width="1"/>${lv[1]!=null?`<line x1="0" x2="${W}" y1="${Y(lv[1])}" y2="${Y(lv[1])}" stroke="#f85149" stroke-dasharray="4 4" stroke-width="1"/>`:""}<polyline points="${h.map(x=>X(x[0])+","+Y(x[1])).join(" ")}" fill="none" stroke="${up?"#3fb950":"#f85149"}" stroke-width="1.8"/></svg>`;
-}
-function render(force){
-  if(!S)return;
-  const c=S.cfg,T=S.totals,open=S.open,fo=FS?.open||[],fCost=fo.reduce((s,p)=>s+p.amt,0);
-  const openVal=open.reduce((s,p)=>s+p.amt*p.cur/p.entry,0)+fo.reduce((s,p)=>s+p.amt+fpl(p),0),openCost=open.reduce((s,p)=>s+p.amt,0)+fCost;
-  const total=T.bal+openVal,res=total-S.demo_start,fi=FS?.info||{};
-  $("fline").innerHTML=FS?`⚡ <b>Крипта с плечом:</b> ${FS.cfg.on?"бот включён":"бот выключен"} · сделок ${fo.filter(p=>p.bot).length} из ${FS.cfg.maxPos} · плечо до x${FS.cfg.lev}${fi.msg?`<br><span style="font-size:12px">Последняя проверка${fi.t?" ("+dt(fi.t)+")":""}: ${esc(fi.msg)}</span>`:""}`:"";
-  // header / health
-  const tickAgo=S.info.tick?now()-S.info.tick:null,alive=tickAgo!=null&&tickAgo<4*6e4;
-  $("health").innerHTML=`<span class="dot ${alive?(S.bot_on?"on":""):"bad"}"></span>${alive?(S.bot_on?"<b>Бот работает</b> на сервере — можно закрыть страницу":"<b>Бот выключен.</b> Открытые сделки всё равно отслеживаются"):tickAgo==null?"Сервер ещё не запускался — подождите минуту":"<b class='dn'>Сервер не отвечает уже "+dur(tickAgo)+"</b>"}`;
-  $("toggle").textContent=S.bot_on?"⏸ Выключить бота":"▶️ Включить бота";
-  $("toggle").className="big "+(S.bot_on?"":"pri");
-  timer();
-  const A=S.info.auto;
-  $("auto").innerHTML=c.auto&&A?`🤖 <b>Автонастройка:</b> фильтры «${esc(A.step)}» — ликвидность от ${money(A.minLiq)}, объём от ${money(A.minVol)}, возраст ${A.ageMin}–${A.ageMax||"∞"} ч → прошли ${A.n} из ${A.pool}.${A.last?`<br>Последняя покупка: ${esc(A.last)}`:""}`:"";
-  $("infoBox").hidden=!S.info.msg;
-  $("info").innerHTML=S.info.msg?`<b>Последняя проверка${S.info.t?" ("+dt(S.info.t)+")":""}:</b> ${esc(S.info.msg)}`:"";
-  // stats
-  const wr=T.sells?Math.round(T.wins/T.sells*100)+"%":"—";
-  $("stats").innerHTML=`
-    <div class="stat"><i>Свободно</i><b>${usd(T.bal)}</b></div>
-    <div class="stat"><i>Всего на счёте</i><b>${usd(total)}</b></div>
-    <div class="stat"><i>Результат с начала</i><b>${sgn(res)}</b> ${pct(res/S.demo_start*100)}</div>
-    <div class="stat"><i>Открыто сделок</i><b>${open.length+fo.length}</b> <span class="mut" style="font-size:12px">${open.length+fo.length?sgn(openVal-openCost):""}</span></div>
-    <div class="stat"><i>Продаж / прибыльных</i><b>${T.sells} / ${wr}</b></div>
-    <div class="stat"><i>Итог закрытых</i><b>${sgn(T.pnl)}</b></div>
-    <div class="stat"><i>Ср. прибыль / убыток</i><b style="font-size:14px"><span class="up">${usd(T.wins?T.winSum/T.wins:0)}</span> / <span class="dn">${usd(T.sells-T.wins?T.lossSum/(T.sells-T.wins):0)}</span></b></div>
-    <div class="stat"><i>Комиссии и проскальзывание</i><b class="dn">${usd(T.fees+T.slip)}</b></div>`;
-  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
-  if(tab==="settings"){if(!formDirty||!$("f_auto"))renderSettings();return}
-  if(!force&&$("view").querySelector("details[open]"))return; // не сбрасываем форму, которую сейчас заполняют
-  $("view").innerHTML=({open:vOpen,closed:vClosed,ledger:vLedger,events:vEvents}[tab]||vOpen)();
-}
-function timer(){
-  if(!S)return;
-  if(!S.bot_on){$("timer").textContent="";return}
-  const next=S.lastScan+S.cfg.every*1000-now();
-  $("timer").innerHTML=next>5000?`⏱ Следующая проверка рынка примерно через <b>${fmtT(next)}</b>`:"🔎 Проверка рынка идёт или начнётся в течение минуты…";
+  return`<svg class="sp" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${Y(entry)}" y2="${Y(entry)}" stroke="#58a6ff" stroke-dasharray="4 4" stroke-width="1"/>${stop!=null?`<line x1="0" x2="${W}" y1="${Y(stop)}" y2="${Y(stop)}" stroke="#f85149" stroke-dasharray="4 4" stroke-width="1"/>`:""}<polyline points="${h.map(x=>X(x[0])+","+Y(x[1])).join(" ")}" fill="none" stroke="${up?"#3fb950":"#f85149"}" stroke-width="1.8"/></svg>`;
 }
 const beAt=p=>{if(!S||(p.stop===0&&!p.nostop)||p.beDone)return 0;const t=S.cfg.auto?(p.stop0||p.stop||30):S.cfg.be;return t>0?t:0};
-const tagOf=p=>`<span class="tag">${p.bot?"🤖 бот":"🎮 вручную"}${p.lvl?" · "+({g:"🟢",y:"🟡",r:"🔴"}[p.lvl]||""):""}</span>`;
-function vOpen(){
-  const buyForm=`<details><summary>➕ Купить монету вручную (демо)</summary>
+const mtag=p=>`<span class="tag">🪙 ${p.bot?"бот":"вручную"}${p.lvl?" "+({g:"🟢",y:"🟡",r:"🔴"}[p.lvl]||""):""}</span>`;
+const mstop=p=>p.nostop||p.stop==null?"без стопа":p.tsl>0?`<span class="up">стоп в плюсе ${plain((p.tsl/p.entry-1)*100)}</span>`:p.stop===0?"🛡️ стоп в безубытке":`стоп −${p.stop}%`;
+function mcard(p){const v=p.amt*p.cur/p.entry,pl=v-p.amt,pc=(p.cur/p.entry-1)*100,k="m"+p.id,h=p.spark||[];
+  return`<details class="tr" data-k="${esc(k)}" data-id="${esc(p.id)}"${op(k)}>
+    <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${mtag(p)}</span><span class="pl">${sgn(pl)} ${pct(pc)}</span></div>
+      <div class="l2"><span>${usd(p.amt)} → ${usd(v)} · ${dur(now()-p.openedAt)}</span><span>${mstop(p)}</span></div></summary>
+    <div class="in">
+      <div class="mut" style="font-size:12.5px">${esc(p.name)}</div>
+      ${sparkSvg(h,p.entry,!p.nostop&&p.stop!=null?p.entry*(1-p.stop/100):null,h.length&&h[h.length-1][1]>=p.entry)}
+      <div class="kv">
+        <span>Вложено → сейчас</span><span>${usd(p.amt)} → ${usd(v)}</span>
+        <span>Вход → цена</span><span>${price(p.entry)} → ${price(p.cur)}</span>
+        <span>Стоп / цель</span><span>${stopTxt(p)}</span>
+        ${beAt(p)?`<span>Безубыток при</span><span>${price(p.entry*(1+beAt(p)/100))} (+${beAt(p)}%)</span>`:""}
+        <span>Открыта</span><span>${dur(now()-p.openedAt)} назад${p.upd?` · цена ${dur(now()-p.upd)} назад`:""}</span>
+        ${p.devNow!=null?`<span>Создатель держит</span><span>${(+p.devNow).toFixed(1)}%</span>`:""}
+      </div>
+      <div class="acts"><button data-act="s50">Продать 50%</button><button data-act="s100">Продать всё</button><button data-act="edit">Стоп / цель</button>${p.stop===0&&!p.nostop?"":'<button data-act="be">🛡️ В безубыток</button>'}</div>
+      <div class="row" style="margin-top:8px;font-size:13px"><a href="https://dexscreener.com/solana/${esc(p.addr)}" target="_blank" rel="noopener noreferrer">График DexScreener</a><a href="https://rugcheck.xyz/tokens/${esc(p.addr)}" target="_blank" rel="noopener noreferrer">RugCheck</a><a href="scanner.html#t=${esc(p.addr)}"${EMBED?' target="_top"':""}>Открыть в сканере</a></div>
+    </div></details>`}
+function mclosed(p,pl){const R=reason({side:"sell",reason:p.reason}),k="c"+p.id;
+  return`<details class="tr" data-k="${esc(k)}"${op(k)}>
+    <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${mtag(p)}</span><span class="pl">${sgn(pl)} ${pct((p.exit/p.entry-1)*100)}</span></div>
+      <div class="l2"><span>${R.ic} ${esc(R.t)}</span><span>${dt(p.closedAt)}</span></div></summary>
+    <div class="in"><div class="kv"><span>Вложено</span><span>${usd(p.amt)}</span><span>Вход → выход</span><span>${price(p.entry)} → ${price(p.exit)}</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Открыта</span><span>${dt(p.openedAt)}</span></div></div></details>`}
+
+/* ---------- крипта с плечом: карточки ---------- */
+const N=id=>+String($(id).value).replace(",",".");
+const fpx=v=>{v=+v;return!v?"—":"$"+(v>=1000?v.toFixed(1):v>=1?v.toFixed(3):v.toPrecision(4))};
+const fpl=p=>Math.max(-p.amt,p.notional*p.dir*(p.cur/p.entry-1)-p.notional*0.001);
+const fdir=p=>p.dir>0?"ЛОНГ":"ШОРТ";
+const ftag=p=>`<span class="tag">⚡ ${fdir(p)} x${p.lev} · ${p.bot?"бот":"вручную"}</span>`;
+const fmove=(p,v)=>pct(p.dir*(v/p.entry-1)*100);
+const fstop=p=>{const m=p.dir*(p.stopPx/p.entry-1)*100;return!p.beDone?`стоп ${plain(m)}`:m>0.2?`<span class="up">стоп в плюсе ${plain(m)}</span>`:"🛡️ стоп в безубытке"};
+function fcard(p){const pl=fpl(p),k="f"+p.id,h=p.spark||[];
+  return`<details class="tr" data-k="${esc(k)}" data-fid="${esc(p.id)}"${op(k)}>
+    <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${ftag(p)}</span><span class="pl">${sgn(pl)} ${pct(pl/p.amt*100)}</span></div>
+      <div class="l2"><span>маржа ${usd(p.amt)} → ${usd(p.amt+pl)} · ${dur(now()-p.openedAt)}</span><span>${fstop(p)}</span></div></summary>
+    <div class="in">
+      <div class="mut" style="font-size:12.5px">${esc(p.name)}</div>
+      ${sparkSvg(h,p.entry,p.stopPx,h.length&&p.dir*(h[h.length-1][1]-p.entry)>=0)}
+      <div class="kv">
+        <span>Маржа → сейчас</span><span>${usd(p.amt)} → ${usd(p.amt+pl)}</span>
+        <span>Размер позиции</span><span>${usd(p.notional)} (x${p.lev})</span>
+        <span>Вход → цена</span><span>${fpx(p.entry)} → ${fpx(p.cur)} (${fmove(p,p.cur)})</span>
+        <span>Стоп</span><span>${p.beDone?'<span class="up">подтянут</span>':'<span class="dn">стоп-лосс</span>'} → ${fpx(p.stopPx)} (${fmove(p,p.stopPx)})</span>
+        <span>Цель</span><span>${p.tpPx?`${fpx(p.tpPx)} (${fmove(p,p.tpPx)})`:'<span class="mut">без цели</span>'}</span>
+        <span>Ликвидация</span><span>${fpx(p.liqPx)}</span>
+        <span>Открыта</span><span>${dur(now()-p.openedAt)} назад${p.upd?` · цена ${dur(now()-p.upd)} назад`:""}</span>
+      </div>
+      ${p.why?`<div class="rsn">🤖 <small style="display:inline">Сигнал: ${esc(p.why.replace(/^бот: /,""))}</small></div>`:""}
+      <div class="acts"><button data-act="fclose">Закрыть сделку</button></div>
+      <div class="row" style="margin-top:8px;font-size:13px"><a href="https://www.tradingview.com/chart/?symbol=BINANCE:${esc(p.sym)}USDT.P" target="_blank" rel="noopener noreferrer">График TradingView</a></div>
+    </div></details>`}
+function fclosed(p){const R=freason({side:"sell",reason:p.reason}),k="c"+p.id;
+  return`<details class="tr" data-k="${esc(k)}"${op(k)}>
+    <summary><div class="l1"><span><span class="sym">${esc(p.sym)}</span> ${ftag(p)}</span><span class="pl">${sgn(p.pnl)} ${pct(p.pnl/p.amt*100)}</span></div>
+      <div class="l2"><span>${R.ic} ${esc(R.t.replace(/^Плечо: /,""))}</span><span>${dt(p.closedAt)}</span></div></summary>
+    <div class="in"><div class="kv"><span>Маржа</span><span>${usd(p.amt)}</span><span>Размер позиции</span><span>${usd(p.notional)}</span><span>Вход → выход</span><span>${fpx(p.entry)} → ${fpx(p.exit)} (${fmove(p,p.exit)})</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Открыта</span><span>${dt(p.openedAt)}</span></div></div></details>`}
+function fled(e){const R=freason(e),buy=e.side==="buy";
+  return`<div class="card"><div class="hd"><span>${buy?'<span class="up">🟢 Открытие</span>':'<span class="dn">🔴 Закрытие</span>'} <span class="sym">${esc(e.sym)}</span> <span class="tag">⚡ ${e.dir>0?"ЛОНГ":"ШОРТ"} x${e.lev}</span></span><span class="mut" style="font-size:12.5px">${dt(e.t)}</span></div>
+    ${buy?"":`<div style="font-size:16px;font-weight:700;margin-top:3px">${sgn(e.pnl)} ${e.cost?pct(e.pnl/e.cost*100):""}</div>`}
+    <div class="kv">
+      <span>${buy?"Маржа":"Вернулось на счёт"}</span><span>${usd(e.amt)}</span>
+      <span>Размер позиции</span><span>${usd(e.notional)}</span>
+      <span>Цена рынка → ваша</span><span>${fpx(e.mkt)} → ${fpx(e.px)}</span>
+      <span>Комиссия / проскальзывание</span><span class="dn">${usd(e.fee)} / ${usd(e.slip)}</span>
+      ${!buy&&Math.abs(e.fund||0)>=0.005?`<span>Плата за удержание</span><span>${sgn(-e.fund)}</span>`:""}
+      <span>Стоп / цель</span><span>${fpx(e.stopPx)} / ${e.tpPx?fpx(e.tpPx):"—"}</span>
+    </div>
+    <div class="rsn">${R.ic} <b>${esc(R.t)}</b>${R.d?`<small>${esc(R.d)}</small>`:""}</div>
+  </div>`}
+
+/* ---------- отрисовка ---------- */
+function render(force){
+  if(!S)return;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+  const tickAgo=S.info.tick?now()-S.info.tick:null,al=$("alert");
+  al.hidden=tickAgo!=null&&tickAgo<4*6e4;
+  if(!al.hidden)al.textContent=tickAgo==null?"Сервер ещё не запускался — подождите минуту.":"⚠️ Сервер не отвечает уже "+dur(tickAgo)+". Сделки сейчас не отслеживаются.";
+  const v=$("view"),a=document.activeElement,typing=a&&v.contains(a)&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&a.type!=="checkbox";
+  if(tab==="settings"){if(force||!$("f_auto")||(!formDirty&&!typing))renderSettings();return}
+  if(!force&&(typing||v.querySelector("details.form[open]")))return; // не сбрасываем форму, которую сейчас заполняют
+  v.innerHTML=({home:vHome,history:vHistory,events:vEvents}[tab]||vHome)();
+  timer();
+}
+function timer(){
+  const e=$("timer");if(!e||!S||!S.bot_on)return;
+  const next=S.lastScan+S.cfg.every*1000-now();
+  e.textContent=next>5000?"Следующая проверка через "+fmtT(next)+".":"Проверка идёт или вот-вот начнётся…";
+}
+// короткий понятный статус ботов; полный текст проверки — под «Подробности»
+function mStatus(){
+  if(!S.bot_on)return`<span class="mut">Выключен.</span> Открытые сделки всё равно отслеживаются.`;
+  const m=S.info.msg||"",nb=S.open.filter(p=>p.bot).length,mx=S.cfg.auto?6:S.cfg.maxPos;let t="",x;
+  if(/^открыто \d+ из \d+/.test(m))t="Все места заняты — ждёт продаж.";
+  else if(/^пауза между покупками/.test(m))t=esc(m[0].toUpperCase()+m.slice(1))+".";
+  else if(/^ошибка/.test(m))t=`<span class="dn">${esc(m)}</span>`;
+  else if((x=m.match(/всего монет (\d+).*?прошли фильтры (\d+).*?проверено (\d+), куплено (\d+)/)))t=`Проверил ${x[1]} ${plural(+x[1],"монету","монеты","монет")}: ${+x[4]?`купил <b>${x[4]}</b>`:"подходящих не нашёл"}.`;
+  else if(m)t=esc(m.slice(0,90));
+  return`<span class="up">Работает</span> · сделок ${nb}${mx?" из "+mx:""}<br>${t} <span id="timer"></span>`;
+}
+function fStatus(){
+  const c=FS.cfg,fi=FS.info||{},m=fi.msg||"",nb=FS.open.filter(p=>p.bot).length;let t="",x;
+  if(!c.on)return`<span class="mut">Выключен.</span> Открытые сделки всё равно отслеживаются.`;
+  if(/^открыто \d+ из \d+/.test(m))t="Все места заняты — ждёт закрытия сделок.";
+  else if(/^ошибка/.test(m))t=`<span class="dn">${esc(m)}</span>`;
+  else if((x=m.match(/проверено монет (\d+) из (\d+), открыто сделок (\d+)/)))t=`Проверил ${x[1]} ${plural(+x[1],"монету","монеты","монет")}${fi.t?" "+dur(now()-fi.t)+" назад":""}: ${+x[3]?`открыл сделок: <b>${x[3]}</b>`:"сигналов на вход нет"}.`;
+  else if(m)t=esc(m.slice(0,90));
+  return`<span class="up">Работает</span> · сделок ${nb} из ${c.maxPos} · плечо до x${c.lev}<br>${t}`;
+}
+function vHome(){
+  const T=S.totals,open=S.open,fo=FS?.open||[],n=open.length+fo.length;
+  const inTr=open.reduce((s,p)=>s+p.amt*p.cur/p.entry,0)+fo.reduce((s,p)=>s+p.amt+fpl(p),0),cost=open.reduce((s,p)=>s+p.amt,0)+fo.reduce((s,p)=>s+p.amt,0);
+  const total=T.bal+inTr,res=total-S.demo_start,d0=new Date(now());d0.setHours(0,0,0,0);
+  const td=S.ledger.filter(e=>e.side==="sell"&&e.t>=+d0),tdPl=td.reduce((s,e)=>s+(+e.pnl||0),0),A=S.info.auto,fi=FS?.info||{};
+  const acct=`<div class="box">
+    <div class="mut" style="font-size:12.5px;display:flex;justify-content:space-between"><span>Демо-счёт · всего</span><span>обновлено ${new Date(now()).toLocaleTimeString("ru-RU")}</span></div>
+    <div class="total">${usd(total)}</div>
+    <div style="font-size:14px">${sgn(res)} ${pct(res/S.demo_start*100)} <span class="mut">с начала (${usd(S.demo_start)})</span></div>
+    <div style="font-size:14px;margin-top:2px">${td.length?`Сегодня: ${sgn(tdPl)} <span class="mut">за ${td.length} ${plural(td.length,"продажу","продажи","продаж")}</span>`:'<span class="mut">Сегодня продаж ещё не было</span>'}</div>
+    <div class="two"><div><i>Свободно</i><b>${usd(T.bal)}</b></div><div><i>В сделках${n?" ("+n+")":""}</i><b>${usd(inTr)}</b>${n?` <span style="font-size:12.5px">${sgn(inTr-cost)}</span>`:""}</div></div>
+  </div>`;
+  const mInfo=`${S.cfg.auto&&A?`🤖 Автонастройка: фильтры «${esc(A.step)}» — ликвидность от ${money(A.minLiq)}, объём от ${money(A.minVol)}, возраст ${A.ageMin}–${A.ageMax||"∞"} ч → прошли ${A.n} из ${A.pool}.${A.last?`<br>Последняя покупка: ${esc(A.last)}`:""}<br>`:""}${S.info.msg?`<b>Последняя проверка${S.info.t?" ("+dt(S.info.t)+")":""}:</b> ${esc(S.info.msg)}`:"Проверок ещё не было."}`;
+  const bots=`<div class="box">
+    <div class="bot"><div><b>🪙 Мемкоины</b><div class="msg">${mStatus()}</div></div><label class="sw" title="Включить или выключить бота"><input type="checkbox" data-sw="meme"${S.bot_on?" checked":""}><span></span></label></div>
+    <details class="plain" data-k="mi"${op("mi")}><summary>Подробности</summary><div class="msg" style="margin-top:6px">${mInfo}</div></details>
+    <hr>
+    ${FS?`<div class="bot"><div><b>⚡ Крипта с плечом</b><div class="msg">${fStatus()}</div></div><label class="sw" title="Включить или выключить бота"><input type="checkbox" data-sw="fut"${FS.cfg.on?" checked":""}><span></span></label></div>
+    <details class="plain" data-k="fi"${op("fi")}><summary>Подробности</summary><div class="msg" style="margin-top:6px">${fi.msg?`<b>Последняя проверка${fi.t?" ("+dt(fi.t)+")":""}:</b> ${esc(fi.msg)}`:"Проверок ещё не было."}<br>Монеты: ${FS.syms.map(x=>esc(x.s)).join(", ")}.</div></details>`
+    :`<div class="msg">⚡ Крипта с плечом: сервер сейчас не ответил — обновите страницу чуть позже.</div>`}
+    <button data-act="tick" style="width:100%;margin-top:12px">🔎 Проверить рынок сейчас</button>
+  </div>`;
+  const list=`<div class="sec"><b>Открытые сделки</b>${n?`<span class="mut">${n}</span><span style="margin-left:auto">${sgn(inTr-cost)}</span>`:""}</div>`
+    +(n?`<div class="hint">Нажмите на сделку — откроются подробности и кнопки.</div>`+open.map(mcard).join("")+fo.map(fcard).join("")
+       :`<div class="empty">Открытых сделок нет.${S.bot_on||FS?.cfg.on?" Боты ищут вход — сделки появятся здесь.":" Включите бота или откройте сделку вручную."}</div>`);
+  const buyForm=`<details class="form" data-k="fb"${op("fb")}><summary>🪙 Купить мемкоин</summary>
     <div class="grid2" style="margin-top:10px">
       <label style="grid-column:1/-1">Адрес токена (mint)<input id="b_addr" placeholder="адрес токена Solana" autocomplete="off" spellcheck="false"></label>
       <label>Сумма, $<input id="b_amt" type="number" inputmode="decimal" value="50"></label>
       <label>Стоп-лосс, % (0 — без стопа)<input id="b_stop" type="number" inputmode="decimal" value="30"></label>
       <label>Цель, x (0 — без цели)<input id="b_tp" type="number" inputmode="decimal" value="2" step="0.5"></label>
     </div><button class="pri" style="margin-top:10px;width:100%" data-act="buy">Купить в демо</button></details>`;
-  const fo=FS?.open||[],fForm=FS?`<details><summary>⚡ Открыть сделку с плечом вручную (демо)</summary>
+  const fForm=FS?`<details class="form" data-k="fo"${op("fo")}><summary>⚡ Открыть сделку с плечом</summary>
     <div class="grid2" style="margin-top:10px">
       <label>Монета<select id="o_sym">${FS.syms.map(x=>`<option value="${esc(x.s)}">${esc(x.s)} — ${esc(x.n)}</option>`).join("")}</select></label>
       <label>Направление<select id="o_dir"><option value="long">📈 Лонг (на рост)</option><option value="short">📉 Шорт (на падение)</option></select></label>
@@ -323,33 +393,24 @@ function vOpen(){
     </div>
     <div class="msg" style="margin-top:6px">Позиция = маржа × плечо. Стоп и цель — в процентах движения цены монеты: при плече x5 движение на 2% против вас — это −10% маржи.</div>
     <button class="pri" style="margin-top:10px;width:100%" data-act="fopen">Открыть в демо</button></details>`:"";
-  if(!S.open.length&&!fo.length)return`<div class="empty">Открытых сделок нет.${S.bot_on||FS?.cfg.on?" Бот ищет сделки — они появятся здесь.":" Включите бота или откройте сделку вручную."}</div>`+buyForm+fForm;
-  return S.open.map(p=>{const v=p.amt*p.cur/p.entry,pl=v-p.amt,pc=(p.cur/p.entry-1)*100;
-    return`<div class="card" data-id="${esc(p.id)}">
-      <div class="hd"><span><span class="sym">${esc(p.sym)}</span> <span class="mut" style="font-size:12.5px">${esc(p.name)}</span></span>${tagOf(p)}</div>
-      <div style="font-size:18px;font-weight:700;margin-top:4px">${sgn(pl)} ${pct(pc)}</div>
-      ${spark(p)}
-      <div class="kv">
-        <span>Вложено → сейчас</span><span>${usd(p.amt)} → ${usd(v)}</span>
-        <span>Вход → цена</span><span>${price(p.entry)} → ${price(p.cur)}</span>
-        <span>Стоп / цель</span><span>${stopTxt(p)}</span>
-        ${beAt(p)?`<span>Безубыток включится при</span><span>${price(p.entry*(1+beAt(p)/100))} (+${beAt(p)}%)</span>`:""}
-        <span>Открыта</span><span>${dur(now()-p.openedAt)} назад${p.upd?` · цена ${dur(now()-p.upd)} назад`:""}</span>
-        ${p.devNow!=null?`<span>Создатель держит</span><span>${(+p.devNow).toFixed(1)}%</span>`:""}
-      </div>
-      <div class="acts"><button data-act="s50">Продать 50%</button><button data-act="s100">Продать всё</button><button data-act="edit">Стоп / цель</button>${p.stop===0&&!p.nostop?"":'<button data-act="be">🛡️ В безубыток</button>'}</div>
-      <div class="row" style="margin-top:8px;font-size:13px"><a href="https://dexscreener.com/solana/${esc(p.addr)}" target="_blank" rel="noopener noreferrer">График DexScreener</a><a href="https://rugcheck.xyz/tokens/${esc(p.addr)}" target="_blank" rel="noopener noreferrer">RugCheck</a><a href="scanner.html#t=${esc(p.addr)}"${EMBED?' target="_top"':""}>Открыть в сканере</a></div>
-    </div>`}).join("")+fo.map(fcard).join("")+buyForm+fForm;
+  return acct+bots+list+`<div class="sec"><b>Открыть сделку вручную</b></div>`+buyForm+fForm;
 }
-function vClosed(){
-  const fc=FS?.closed||[];
-  if(!S.closed.length&&!fc.length)return`<div class="empty">Закрытых сделок пока нет.</div>`;
-  return[...fc.map(p=>({t:p.closedAt,h:fclosedCard(p)})),...S.closed.map(p=>{const pl=p.amt*(p.exit/p.entry-1),R=reason({side:"sell",reason:p.reason});
-    return{t:p.closedAt,h:`<div class="card"><div class="hd"><span class="sym">${esc(p.sym)}</span>${tagOf(p)}</div>
-      <div style="font-size:17px;font-weight:700;margin-top:3px">${sgn(pl)} ${pct((p.exit/p.entry-1)*100)}</div>
-      <div class="rsn">${R.ic} <b>${esc(R.t)}</b></div>
-      <div class="kv"><span>Вложено</span><span>${usd(p.amt)}</span><span>Вход → выход</span><span>${price(p.entry)} → ${price(p.exit)}</span><span>Держал</span><span>${dur(p.closedAt-p.openedAt)}</span><span>Закрыта</span><span>${dt(p.closedAt)}</span></div></div>`}})].sort((a,b)=>b.t-a.t).map(x=>x.h).join("")
-    +(S.closed.length>=200?`<div class="mut" style="text-align:center;font-size:12.5px">Показаны последние 200</div>`:"");
+function vHistory(){
+  const T=S.totals,wr=T.sells?Math.round(T.wins/T.sells*100)+"%":"—";
+  const seg=`<div class="seg"><button data-hv="trades" class="${hv==="trades"?"on":""}">Сделки</button><button data-hv="ledger" class="${hv==="ledger"?"on":""}">Тетрадь</button></div>`;
+  const stats=`<div class="stats">
+    <div class="stat"><i>Продаж / прибыльных</i><b>${T.sells} / ${wr}</b></div>
+    <div class="stat"><i>Итог закрытых</i><b>${sgn(T.pnl)}</b></div>
+    <div class="stat"><i>Ср. прибыль / убыток</i><b style="font-size:14px"><span class="up">${usd(T.wins?T.winSum/T.wins:0)}</span> / <span class="dn">${usd(T.sells-T.wins?T.lossSum/(T.sells-T.wins):0)}</span></b></div>
+    <div class="stat"><i>Комиссии и проскальзывание</i><b class="dn">${usd(T.fees+T.slip)}</b></div></div>`;
+  if(hv==="ledger")return seg+stats+`<div class="hint" style="margin-top:10px">Тетрадь — каждая покупка и продажа с ценами, комиссиями и причиной.</div>`+vLedger();
+  const all=[...S.closed.map(p=>({k:"m",t:p.closedAt,pl:p.amt*(p.exit/p.entry-1),p})),...(FS?.closed||[]).map(p=>({k:"f",t:p.closedAt,pl:p.pnl,p}))].sort((a,b)=>b.t-a.t);
+  const chip=(k,l)=>`<button data-hf="${k}" class="${hf===k?"on":""}">${l} <span class="mut">${all.filter(x=>k==="all"||x.k===k).length}</span></button>`;
+  const list=all.filter(x=>hf==="all"||x.k===hf),w=list.filter(x=>x.pl>0).length;
+  return seg+stats+`<div class="chips">${chip("all","Все")}${chip("m","🪙 Мемкоины")}${chip("f","⚡ Плечо")}</div>`
+    +(list.length?`<div class="hint">В списке ${list.length}: прибыльных ${w} (${Math.round(w/list.length*100)}%), итог ${sgn(list.reduce((s,x)=>s+x.pl,0))}. Нажмите на сделку — откроются подробности.</div>`+list.map(x=>x.k==="m"?mclosed(x.p,x.pl):fclosed(x.p)).join("")
+      :`<div class="empty">Закрытых сделок пока нет.</div>`)
+    +(S.closed.length>=200?`<div class="mut" style="text-align:center;font-size:12.5px">Показаны последние сделки</div>`:"");
 }
 function vLedger(){
   if(!S.ledger.length)return`<div class="empty">Записей пока нет. Они появятся после первой покупки.</div>`;
@@ -369,16 +430,17 @@ function vLedger(){
     </div>`}).join("")+(S.ledger.length>=300?`<div class="mut" style="text-align:center;font-size:12.5px">Показаны последние 300 записей</div>`:"");
 }
 function vEvents(){
-  if(!S.events.length)return`<div class="empty">Сигналов пока не было.</div>`;
-  return`<div class="box">${S.events.map(e=>`<div class="ev"><small>${dt(e.t)}</small>${esc(e.msg)}</div>`).join("")}</div>`;
+  if(!S.events.length)return`<div class="empty">Событий пока не было.</div>`;
+  return`<div class="hint">Что делали боты: покупки, продажи, переносы стопа.</div><div class="box">${S.events.map(e=>`<div class="ev"><small>${dt(e.t)}</small>${esc(e.msg)}</div>`).join("")}</div>`;
 }
 const RISKTXT={g:"Только 🟢. Не покупает перегретые монеты (больше ±25% за час или ±125% за сутки); в авторежиме — только ликвидность от $100K и возраст от 6 ч. Создатель ≤5%, топ-10 ≤30%, без инсайдеров, нужен X или Telegram.",y:"🟢 и 🟡 (🟡 — половиной суммы). Не покупает перегретые монеты (больше ±30% за час или ±150% за сутки); в авторежиме — только ликвидность от $50K и возраст от 2 ч. Создатель ≤10%, топ-10 ≤40%, нужен X или Telegram.",r:"🟢 🟡 🔴 (🔴 — 30% суммы). Создатель ≤20%, топ-10 ≤60%, соцсети не нужны, покупает и без ответа RugCheck.",x:"Почти всё. Создатель ≤50%, топ-10 ≤90%. Большинство сделок может быть в минус."};
+const LVN={g:"🛡️ Осторожный",y:"⚖️ Обычный",r:"🔥 Рискованный",x:"💀 Очень рискованный"};
 function renderSettings(){
   const c=S.cfg,F=(k,l,extra)=>`<label>${l}<input id="f_${k}" type="number" inputmode="decimal" value="${c[k]}" ${extra||""}></label>`;
   $("view").innerHTML=`
-  <div class="box">
-    <h2 style="margin-top:0">Бот</h2>
-    <div class="grid2">
+  <div class="hint">Нажмите на раздел, чтобы открыть его.</div>
+  <details data-k="s1"${op("s1")}><summary>🪙 Бот мемкоинов<span class="sm">${S.bot_on?"включён":"выключен"} · ${c.auto?"автоматический режим":"ручные параметры"} · ${LVN[c.lvl]||""}</span></summary>
+    <div class="grid2" style="margin-top:10px">
       <label>Параметры покупки<select id="f_auto"><option value="1">🤖 Автоматически</option><option value="0">✋ Вручную</option></select></label>
       <label>Уровень риска<select id="f_lvl"><option value="g">🛡️ Осторожный</option><option value="y">⚖️ Обычный</option><option value="r">🔥 Рискованный</option><option value="x">💀 Очень рискованный</option></select></label>
       ${F("every","Проверять рынок каждые, сек (от 60)")}
@@ -397,10 +459,9 @@ function renderSettings(){
     </div>
     <div class="msg" id="autoTxt" style="margin-top:8px"></div>
     <button class="pri big" style="margin-top:12px" data-act="save">Сохранить настройки</button>
-  </div>
-  ${FS?(()=>{const g=FS.cfg,G=(k,l,x)=>`<label>${l}<input id="g_${k}" type="number" inputmode="decimal" value="${g[k]}" ${x||""}></label>`;return`<div class="box">
-    <h2 style="margin-top:0">⚡ Крипта с плечом <span class="mut" style="font-weight:400;font-size:12.5px">(демо)</span></h2>
-    <div class="grid2">
+  </details>
+  ${FS?(()=>{const g=FS.cfg,G=(k,l,x)=>`<label>${l}<input id="g_${k}" type="number" inputmode="decimal" value="${g[k]}" ${x||""}></label>`;return`<details data-k="s2"${op("s2")}><summary>⚡ Крипта с плечом<span class="sm">${g.on?"включён":"выключен"} · плечо до x${g.lev} · до ${g.maxPos} ${plural(g.maxPos,"сделки","сделок","сделок")} · ${({both:"лонг и шорт",long:"только лонг",short:"только шорт"})[g.dirs]}</span></summary>
+    <div class="grid2" style="margin-top:10px">
       <label>Бот<select id="g_on"><option value="1">▶️ Включён</option><option value="0">⏸ Выключен</option></select></label>
       <label>Направление<select id="g_dirs"><option value="both">Лонг и шорт</option><option value="long">Только лонг</option><option value="short">Только шорт</option></select></label>
       ${G("lev","Плечо, до x (1–20)")}${G("risk","Риск на сделку, % счёта",'step="0.5"')}${G("maxPos","Макс. сделок")}${G("tp","Цель, во сколько раз дальше стопа",'step="0.5"')}${G("hold","Держать макс., ч")}
@@ -408,18 +469,32 @@ function renderSettings(){
     <div class="msg" style="margin-top:8px">Бот торгует ${FS.syms.map(x=>esc(x.s)).join(", ")} на том же демо-счёте — в лонг (на рост) и в шорт (на падение). Вход: тренд на часовом графике и пробой максимума или минимума за 5 часов с повышенным объёмом. Стоп — по волатильности монеты (0,8–5% цены), цель — во столько раз дальше стопа, сколько указано выше. Когда прибыль сравняется со стопом, стоп переходит в безубыток и дальше идёт за ценой. Маржа на сделку — не больше 10% счёта. Учитываются комиссия 0,05% за вход и выход, проскальзывание и плата за удержание.</div>
     <div class="warnbox">Плечо умножает и прибыль, и убыток. Если цена дойдёт до ликвидации, маржа сделки теряется целиком.</div>
     <button class="pri big" style="margin-top:12px" data-act="fsave">Сохранить настройки крипты</button>
-  </div>`})():""}
-  <div class="box">
-    <h2 style="margin-top:0">Демо-счёт</h2>
-    <div class="row"><label style="flex:1">Стартовый баланс, $<input id="f_start" type="number" inputmode="decimal" value="${S.demo_start}"></label><button class="danger" data-act="reset" style="align-self:end">Начать заново</button></div>
-    <div class="msg" style="margin-top:6px">«Начать заново» удалит все демо-сделки, тетрадь и сигналы.</div>
-  </div>
-  <div class="box">
-    <h2 style="margin-top:0">Доступ</h2>
-    <div class="row"><label style="flex:1">Новый код доступа (от 6 символов)<input id="f_pin" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button data-act="setpin" style="align-self:end">Сменить код</button></div>
+  </details>`})():""}
+  <details data-k="s3"${op("s3")}><summary>💰 Демо-счёт<span class="sm">стартовый баланс ${usd(S.demo_start)}</span></summary>
+    <div class="row" style="margin-top:10px"><label style="flex:1">Стартовый баланс, $<input id="f_start" type="number" inputmode="decimal" value="${S.demo_start}"></label><button class="danger" data-act="reset" style="align-self:end">Начать заново</button></div>
+    <div class="msg" style="margin-top:6px">«Начать заново» удалит все демо-сделки, тетрадь и события.</div>
+  </details>
+  <details data-k="s4"${op("s4")}><summary>🔑 Доступ и приложение<span class="sm">код доступа, выход, значок на экране</span></summary>
+    <div class="row" style="margin-top:10px"><label style="flex:1">Новый код доступа (от 6 символов)<input id="f_pin" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button data-act="setpin" style="align-self:end">Сменить код</button></div>
     <div class="row" style="margin-top:10px"><button data-act="logout">Выйти на этом устройстве</button>${EMBED?"":'<a href="scanner.html" style="margin-left:auto">Открыть полный сканер →</a>'}</div>
     <div class="msg" style="margin-top:8px">💡 Чтобы открывать как приложение: в меню браузера выберите «На экран “Домой”» / «Добавить на главный экран».</div>
-  </div>`;
+  </details>
+  <details data-k="s5"${op("s5")}><summary>❓ Что значат слова<span class="sm">стоп, цель, безубыток, плечо, маржа, ликвидация</span></summary>
+    <div class="gl" style="margin-top:10px">
+      <p><b>Демо-счёт</b> — виртуальные деньги. Сделки считаются по настоящим ценам, но реальных денег нет.</p>
+      <p><b>Стоп-лосс</b> — цена, при которой бот продаёт, чтобы убыток не рос дальше.</p>
+      <p><b>Цель</b> — цена, при которой бот фиксирует прибыль. У мемкоинов на цели продаётся половина, остаток держится дальше.</p>
+      <p><b>Безубыток</b> — стоп переносится на цену входа: сделка уже не уйдёт в большой минус.</p>
+      <p><b>Подтянутый стоп (трейлинг)</b> — стоп идёт за ценой и сохраняет часть набранной прибыли.</p>
+      <p><b>🟢 🟡 🔴</b> — оценка риска мемкоина: низкий, средний, высокий.</p>
+      <p><b>Ликвидность</b> — сколько денег в пуле монеты. Чем её меньше, тем легче обрушить цену.</p>
+      <p><b>Лонг / шорт</b> — ставка на рост / на падение цены.</p>
+      <p><b>Плечо</b> — позиция больше ваших денег в несколько раз. Во столько же раз растут и прибыль, и убыток.</p>
+      <p><b>Маржа</b> — ваши деньги в сделке с плечом (залог).</p>
+      <p><b>Ликвидация</b> — цена, при которой маржа сделки теряется целиком.</p>
+      <p><b>Комиссия и проскальзывание</b> — расходы на каждую покупку и продажу; они уже учтены в результате.</p>
+    </div>
+  </details>`;
   if(FS){$("g_on").value=FS.cfg.on?"1":"0";$("g_dirs").value=FS.cfg.dirs}
   $("f_auto").value=c.auto?"1":"0";$("f_lvl").value=c.lvl;$("f_amtMode").value=c.amtMode;$("f_mom").value=c.mom;
   const sync=()=>{const a=$("f_auto").value==="1";$("manual").style.opacity=a?.4:1;$("manual").querySelectorAll("input,select").forEach(e=>e.disabled=a);
@@ -431,7 +506,7 @@ function renderSettings(){
 function readCfg(){const c={auto:$("f_auto").value==="1",lvl:$("f_lvl").value,amtMode:$("f_amtMode").value,mom:$("f_mom").value};
   for(const k of["every","gap","pct","usd","maxPos","stop","be","trail","tp","hold","minLiq","minVol","ageMin","ageMax"])c[k]=+String($("f_"+k).value).replace(",",".");return c}
 
-/* ---------- actions ---------- */
+/* ---------- действия ---------- */
 async function act(a,el){
   const card=el.closest("[data-id]"),id=card?.dataset.id,p=id&&S.open.find(x=>x.id===id);
   const fid=el.closest("[data-fid]")?.dataset.fid,fp=fid&&FS?.open.find(x=>x.id===fid);
@@ -440,25 +515,36 @@ async function act(a,el){
     else if(a==="edit"){const be=p.stop===0&&!p.nostop;const st=prompt(be?`Стоп ${p.sym} сейчас в безубытке и подтягивается за ценой. Оставьте поле пустым, чтобы его не менять, или введите новый стоп, % от входа (0 — без стопа):`:`Стоп-лосс для ${p.sym}, % от входа (0 — без стопа):`,be?"":p.nostop||p.stop==null?"0":String(p.stop));if(st==null)return;const tp=prompt(`Цель для ${p.sym}, во сколько раз (например 2; 0 — без цели):`,String(p.tp||0));if(tp==null)return;
       const x={id,tp:+String(tp).replace(",",".")};if(String(st).trim()!=="")x.stop=+String(st).replace(",",".");await load("edit",x);toast("Сохранено");}
     else if(a==="be"){if(!confirm(`Перенести стоп ${p.sym} на цену входа (${p.cur>=p.entry?"сейчас цена выше входа":"сейчас цена НИЖЕ входа — позиция продастся при следующей проверке"})?`))return;el.disabled=true;await load("edit",{id,be:true});toast("Стоп перенесён в безубыток");}
-    else if(a==="buy"){el.disabled=true;await load("buy",{addr:$("b_addr").value.trim(),amt:+$("b_amt").value,stop:+$("b_stop").value,tp:+$("b_tp").value});render(true);toast("Куплено в демо");}
-    else if(a==="fclose"){if(!confirm(`Закрыть ${fp.sym} ${fdir(fp)} x${fp.lev} по текущей цене?`))return;el.disabled=true;await fload("close",{id:fid});render(true);toast("Сделка закрыта");}
-    else if(a==="fopen"){el.disabled=true;await fload("open",{sym:$("o_sym").value,dir:$("o_dir").value,margin:N("o_margin"),lev:N("o_lev"),stop:N("o_stop"),tp:N("o_tp")});render(true);toast("Сделка открыта в демо");}
+    else if(a==="buy"){el.disabled=true;await load("buy",{addr:$("b_addr").value.trim(),amt:+$("b_amt").value,stop:+$("b_stop").value,tp:+$("b_tp").value});OPEN.delete("fb");toast("Куплено в демо");}
+    else if(a==="fclose"){if(!confirm(`Закрыть ${fp.sym} ${fdir(fp)} x${fp.lev} по текущей цене?`))return;el.disabled=true;await fload("close",{id:fid});toast("Сделка закрыта");}
+    else if(a==="fopen"){el.disabled=true;await fload("open",{sym:$("o_sym").value,dir:$("o_dir").value,margin:N("o_margin"),lev:N("o_lev"),stop:N("o_stop"),tp:N("o_tp")});OPEN.delete("fo");toast("Сделка открыта в демо");}
+    else if(a==="tick"){el.disabled=true;el.textContent="🔎 Проверяю рынок… до минуты";const ft=call("tick",null,FAPI).then(x=>{FS=x}).catch(()=>{});await load("tick");await ft;toast("Проверка завершена");}
     else if(a==="fsave"){el.disabled=true;await fload("save",{cfg:{on:$("g_on").value==="1",dirs:$("g_dirs").value,lev:N("g_lev"),risk:N("g_risk"),maxPos:N("g_maxPos"),tp:N("g_tp"),hold:N("g_hold")}});formDirty=false;renderSettings();toast("Настройки крипты сохранены");}
     else if(a==="save"){el.disabled=true;await load("save",{cfg:readCfg()});formDirty=false;renderSettings();toast("Настройки сохранены");}
-    else if(a==="reset"){if(!confirm("Начать демо заново? Все сделки, тетрадь и сигналы будут удалены."))return;await load("reset",{start:+$("f_start").value||1000});formDirty=false;renderSettings();toast("Демо-счёт начат заново");}
+    else if(a==="reset"){if(!confirm("Начать демо заново? Все сделки, тетрадь и события будут удалены."))return;await load("reset",{start:+$("f_start").value||1000});formDirty=false;renderSettings();toast("Демо-счёт начат заново");}
     else if(a==="setpin"){const np=$("f_pin").value.trim().toUpperCase();if(np.length<6){toast("Код должен быть от 6 символов",true);return}if(!confirm("Сменить код доступа на «"+np+"»? Запомните его — старый перестанет работать."))return;
       await call("setpin",{newPin:np});pin=np;LS.set("pin",pin);$("f_pin").value="";toast("Код доступа изменён");}
     else if(a==="logout"){logout("")}
     if(S&&tab!=="settings")render(true);
   }catch(e){toast(e.message,true)}finally{if(el&&el.isConnected)el.disabled=false}
 }
-$("view").addEventListener("click",e=>{const b=e.target.closest("button[data-act]");if(b)act(b.dataset.act,b)});
-$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;LS.set("tab",tab);formDirty=false;render(true)});
+async function toggleBot(which,on,el){
+  el.blur();
+  if(!on&&!confirm(`Выключить бота «${which==="meme"?"Мемкоины":"Крипта с плечом"}»? Новых сделок не будет, открытые продолжат отслеживаться (стоп и цель работают).`)){el.checked=true;return}
+  try{if(which==="meme")await load("save",{bot_on:on},true);else await fload("save",{cfg:{on}});render(true);toast(on?"Бот включён — первая проверка в течение минуты":"Бот выключен")}
+  catch(e){toast(e.message,true);render(true)}
+}
+const view=$("view");
+view.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.act)act(b.dataset.act,b);
+  else if(b.dataset.hv){hv=b.dataset.hv;LS.set("hv",hv);render(true)}
+  else if(b.dataset.hf){hf=b.dataset.hf;LS.set("hf",hf);render(true)}
+});
+view.addEventListener("change",e=>{const s=e.target.closest("input[data-sw]");if(s)toggleBot(s.dataset.sw,s.checked,s)});
+view.addEventListener("toggle",e=>{const k=e.target.dataset?.k;if(k){if(e.target.open)OPEN.add(k);else OPEN.delete(k)}},true);
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;LS.set("tab",tab);formDirty=false;render(true);scrollTo(0,0)});
 $("refresh").onclick=()=>load().catch(()=>{});
-$("toggle").onclick=async()=>{const on=!S.bot_on;if(!on&&!confirm("Выключить бота? Новых покупок не будет, открытые сделки продолжат отслеживаться (стоп и цель работают)."))return;
-  try{await load("save",{bot_on:on});toast(on?"Бот включён — первая проверка в течение минуты":"Бот выключен")}catch{}};
-$("tickNow").onclick=async()=>{const b=$("tickNow");b.disabled=true;b.textContent="🔎 Проверяю рынок… до минуты";
-  try{const ft=call("tick",null,FAPI).then(x=>{FS=x}).catch(()=>{});await load("tick");await ft;render();toast("Проверка завершена")}catch{}finally{b.disabled=false;b.textContent="▶ Проверить рынок сейчас"}};
 async function login(){pin=$("pinIn").value.trim().toUpperCase();if(!pin)return;$("loginErr").textContent="Проверяю…";
   try{await load("state",null,true);LS.set("pin",pin);$("loginErr").textContent=""}catch(e){$("loginErr").textContent=e.message}}
 $("pinGo").onclick=login;$("pinIn").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
