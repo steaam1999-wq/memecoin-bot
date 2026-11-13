@@ -258,14 +258,37 @@
     .colmenu{position:fixed;left:8px;right:8px;top:auto;bottom:8px;max-height:70vh;overflow:auto;z-index:48}
   }
   body.incloud #aiBtn{display:none}
+
+  /* ---------- общее меню сайта, подсказки ---------- */
+  .bnav{display:none}
+  .tobuy{display:none}
+  .legend{padding:7px 14px;font-size:12.5px;color:var(--mut);border-bottom:1px solid var(--line)}
+  .legend summary{cursor:pointer;color:var(--acc)}
+  .legend p{margin:6px 0 0;line-height:1.5}
+  @media(max-width:760px){
+    body{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+    .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:44;gap:2px;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(22,27,34,.96);border-top:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    .bnav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;font-size:11px;color:var(--mut);text-decoration:none;border:1px solid transparent;border-radius:8px;white-space:nowrap}
+    .bnav a span{font-size:20px;line-height:1.25}
+    .bnav a.on{background:#21262d;border-color:var(--line);color:var(--text)}
+    #aiBtn{bottom:calc(82px + env(safe-area-inset-bottom));width:50px;height:50px;padding:0;border-radius:50%;font-size:0}
+    #aiBtn::before{content:"🤖";font-size:24px}
+    #tabC{display:none}
+    .legend{padding:7px 10px}
+    main.withSide #sideWrap{padding-bottom:0}
+    main.withSide #sideWrap::after{content:"";display:block;height:calc(16px + env(safe-area-inset-bottom))}
+    .tobuy{display:block;position:sticky;bottom:0;z-index:2;margin:12px -12px 0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+    .tobuy button{width:100%;padding:12px;font-weight:700;background:#8957e5;border-color:#8957e5}
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>🔎 Сканер мемкоинов · Solana</h1>
-  <nav class="tabs"><button id="tabScan" class="on">Сканер</button><button id="tabPf">Мои сделки <span id="pfCnt"></span><span id="botInd"></span></button><button id="tabW">Кошельки 🐋</button><button id="tabL">📒 Тетрадь</button><button id="tabC">☁️ Бот 24/7 <span id="cloudCnt"></span></button></nav>
+  <nav class="tabs"><button id="tabScan" class="on">Монеты</button><button id="tabPf">Мои сделки <span id="pfCnt"></span><span id="botInd"></span></button><button id="tabW">Кошельки 🐋</button><button id="tabL">📒 Тетрадь</button><button id="tabC">🏠 Главная <span id="cloudCnt"></span></button></nav>
   <span id="status">—</span>
 </header>
+<nav class="bnav"><a href="index.html#home"><span>🏠</span>Главная</a><a class="on" href="#" id="bnScan"><span>🔎</span>Сканер</a><a href="index.html#history"><span>📜</span>История</a><a href="index.html#events"><span>🔔</span>События</a><a href="index.html#settings"><span>⚙️</span>Настройки</a></nav>
 <div id="alerts"></div>
 <div id="tm" hidden><div class="tmBox">
   <div id="tmTop"></div>
@@ -333,6 +356,14 @@
 <div class="srcline" id="srcLine">Источники: загрузка…</div>
 
 
+<details class="legend"><summary>ℹ️ Что значат значки в таблице</summary>
+  <p>⭐ — избранное: монета закрепляется вверху, на неё можно поставить уведомления.</p>
+  <p><b>Цвет кружка</b> — итог проверок: 🟢 явных проблем нет · 🟡 есть предупреждения · 🔴 опасно · серый — проверка ещё идёт.</p>
+  <p><b>Рейтинг 0–100</b> — общая оценка: безопасность, держатели, ликвидность, соцсети, динамика. Чем больше, тем лучше.</p>
+  <p><b>Динамика</b>: 🔥 ускоряется · 📈 растёт · ➖ спокойно · ❄️ интерес затухает.</p>
+  <p>☁️ — монета сейчас куплена ботом на сервере · 🐋 — её купил отслеживаемый кошелёк · NEW — недавно появилась в таблице · 📌 — закреплена.</p>
+  <p>Нажмите на монету — откроются проверки, график и покупка.</p>
+</details>
 <main>
   <div class="tblwrap">
     <table>
@@ -367,6 +398,7 @@
 </div>
 
 <div id="viewL" class="pf" hidden>
+  <div class="flag f-i" style="font-size:13px;margin-bottom:10px">ℹ️ Здесь — пробные сделки, которые хранятся только в этом браузере. Сделки ботов и общий демо-счёт — на <a href="index.html#home">«🏠 Главной»</a>.</div>
   <h2 style="margin-top:0">📒 Тетрадь сделок</h2>
   <div style="font-size:13px;color:var(--mut);margin-bottom:10px">Здесь записана каждая покупка и продажа: цена рынка, ваша фактическая цена, комиссия, проскальзывание и итог. Итог продажи считается <b>после всех издержек</b>, то есть столько вы реально заработали или потеряли. В последнем столбце можно писать заметки: почему купили, что пошло не так.</div>
   <div class="wform">
@@ -410,6 +442,7 @@
 </div>
 
 <div id="viewPf" class="pf" hidden>
+  <div class="flag f-i" style="font-size:13px;margin-bottom:10px">ℹ️ Здесь — пробные сделки, которые хранятся только в этом браузере. Сделки ботов и общий демо-счёт — на <a href="index.html#home">«🏠 Главной»</a>.</div>
   <div class="pfbar" style="margin:0 0 12px"><span class="tabs"><button id="modeReal">💼 Реальные сделки</button><button id="modeDemo">🎮 Демо-счёт</button></span></div>
   <div id="demoBar" hidden style="margin-bottom:12px">
     <div class="flag f-i" style="font-size:13px">🎮 <b>Демо-режим:</b> виртуальные деньги, но настоящие монеты и живые цены. Чтобы было как в жизни, при покупке и продаже учитываются комиссия 1% и проскальзывание: чем меньше ликвидность и больше сумма, тем хуже цена.</div>
@@ -420,7 +453,7 @@
     </div>
     <div style="margin-top:12px;padding:12px;border:1px solid #8957e5;border-radius:6px;background:#8957e512">
       <label class="chk" style="font-size:14px"><input type="checkbox" id="botOn"> <b>🤖 Локальный автобот (работает, только пока открыта эта страница)</b></label>
-      <div class="flag f-i" style="margin-top:8px;font-size:13px">☁️ <b>Круглосуточный бот теперь работает на сервере</b> — вкладка «☁️ Бот 24/7». Ему не нужен открытый браузер, а сделки видны с телефона. Этот локальный бот оставлен для экспериментов: у него отдельный демо-счёт в этом браузере. Не включайте оба сразу, чтобы не путаться.</div>
+      <div class="flag f-i" style="margin-top:8px;font-size:13px">☁️ <b>Круглосуточный бот теперь работает на сервере</b> — страница «🏠 Главная». Ему не нужен открытый браузер, а сделки видны с телефона. Этот локальный бот оставлен для экспериментов: у него отдельный демо-счёт в этом браузере. Не включайте оба сразу, чтобы не путаться.</div>
       <div class="wform" style="margin-top:8px">
         <label>Параметры покупки<select data-b="auto"><option value="1">🤖 Автоматически — бот подбирает сам</option><option value="0">✋ Вручную — по полям ниже</option></select></label>
       </div>
@@ -1150,7 +1183,8 @@ function showSide(r){
       <label>Цена входа, $<input type="number" id="cEntry" step="any" value="${+p.priceUsd||0}"></label>
     </div>
     <div class="res" id="cRes"></div>
-    <h3>Купить / отслеживать</h3>
+    <div class="tobuy"><button id="toBuy">☁️ Купить эту монету (демо) ↓</button></div>
+    <h3 id="buyHead">Купить / отслеживать</h3>
     ${pf.some(x=>x.addr===a&&x.status==="open")?`<div class="flag f-i">Этот токен уже есть в «Моих сделках». Можно добавить ещё одну покупку.</div>`:""}
     <div class="calc">
       <label>Цена входа, $<input type="number" id="bEntry" step="any" value="${+p.priceUsd||0}"></label>
@@ -1162,7 +1196,7 @@ function showSide(r){
     <div class="pctb">Сумма от демо-баланса (${usd(demoBal())}): ${[5,10,25,50,100].map(x=>`<button data-bp="${x}">${x}%</button>`).join("")}<span style="margin-left:4px">или впишите свою сумму в $ в поле «Сумма»</span></div>
     <button class="pri" id="bAdd" style="margin-top:8px;width:100%">➕ Я купил по-настоящему — следить</button>
     <button id="bCloud" style="margin-top:6px;width:100%;background:#8957e5;border-color:#8957e5;font-weight:600">☁️ Купить на сервере 24/7 (демо${cloudState?`, свободно ${usd(cloudState.totals.bal)}`:""})</button>
-    <div style="font-size:12px;color:var(--mut);margin-top:4px">${cloudPin()?"Сделка попадёт к серверному боту: он следит за стопом и целью круглосуточно, даже при закрытом браузере.":"Чтобы покупать на сервере, один раз войдите во вкладке «☁️ Бот 24/7»."}</div>
+    <div style="font-size:12px;color:var(--mut);margin-top:4px">${cloudPin()?"Сделка попадёт к серверному боту: он следит за стопом и целью круглосуточно, даже при закрытом браузере.":"Чтобы покупать на сервере, один раз войдите на странице «🏠 Главная»."}</div>
     ${cloudPos(a).map(x=>`<div class="flag f-g">☁️ На сервере: ${usd(x.amt)} по ${price(x.entry)}, сейчас ${pct((x.cur/x.entry-1)*100)}${x.bot?" · куплено ботом":""}</div>`).join("")}
     <button id="bDemo" style="margin-top:6px;width:100%">🎮 Купить в демо по текущей цене (свободно ${usd(demoBal())})</button>
     <div style="font-size:12px;color:var(--mut);margin-top:4px">В демо цена входа берётся живая, поле «Цена входа» не используется. Проскальзывание на эту сумму ≈ ${((impact(lastPos||0,p.liquidity?.usd||0)+FEE)*100).toFixed(1)}% с комиссией.</div>
@@ -1172,6 +1206,7 @@ function showSide(r){
   $("bAdd").addEventListener("click",()=>addPosition(r));
   $("bDemo").addEventListener("click",()=>buyDemo(r));
   $("bCloud").addEventListener("click",()=>buyCloud(r));
+  $("toBuy").onclick=()=>$("buyHead").scrollIntoView({behavior:"smooth",block:"start"});
   $("side").querySelectorAll("[data-bp]").forEach(b=>b.onclick=()=>{$("bAmt").value=(Math.floor(demoBal()*+b.dataset.bp)/100).toFixed(2);$("bAmt").focus()});
   wireFav(r);
   loadFull(r);
@@ -1439,7 +1474,7 @@ const CLOUD="https://gqnzktvbkgilreoqaggr.supabase.co/functions/v1/bot";
 const cloudPin=()=>{try{return localStorage.getItem("mb_pin")||""}catch{return""}};
 let cloudState=null;
 async function cloud(action,extra){
-  const pin=cloudPin();if(!pin)throw new Error("Сначала войдите во вкладке «☁️ Бот 24/7» (нужен код доступа)");
+  const pin=cloudPin();if(!pin)throw new Error("Сначала войдите на странице «🏠 Главная» (нужен код доступа)");
   let r;try{r=await fetch(CLOUD,{method:"POST",headers:{"content-type":"application/json","x-pin":pin},body:JSON.stringify({action,...(extra||{})})})}catch{throw new Error("Нет связи с сервером бота")}
   const d=await r.json().catch(()=>({error:"Сервер ответил с ошибкой"}));if(d.error)throw new Error(d.error);return d;
 }
@@ -1453,7 +1488,7 @@ async function buyCloud(r){
   const amt=+$("bAmt").value,stop=+$("bStop").value,tp=+$("bTp").value,b=$("bCloud");
   if(!(amt>0)){setStatus("Укажите сумму покупки");return}
   b.disabled=true;setStatus("☁️ Покупаю на сервере…");
-  try{cloudState=await cloud("buy",{addr:r.addr,amt,stop,tp});notify("good",`☁️ ${r.pair.baseToken?.symbol} куплен на сервере на ${usd(amt)} — бот следит за ним круглосуточно (вкладка «☁️ Бот 24/7»)`);
+  try{cloudState=await cloud("buy",{addr:r.addr,amt,stop,tp});notify("good",`☁️ ${r.pair.baseToken?.symbol} куплен на сервере на ${usd(amt)} — бот следит за ним круглосуточно (страница «🏠 Главная»)`);
     $("cloudCnt").textContent=`(${cloudState.open.length})`;render();showSide(r)}
   catch(e){notify("bad","☁️ Не удалось купить на сервере: "+e.message);b.disabled=false}
 }
@@ -1461,6 +1496,7 @@ function openHash(){const m=location.hash.match(/^#t=([1-9A-HJ-NP-Za-km-z]{32,44
 window.addEventListener("hashchange",openHash);
 function sizeCloud(){const fr=$("cloudFrame");if($("viewC").hidden)return;fr.style.height=Math.max(320,innerHeight-fr.getBoundingClientRect().top-scrollY)+"px"}
 window.addEventListener("resize",sizeCloud);
+$("bnScan").onclick=e=>{e.preventDefault();showView("scan");scrollTo(0,0)};
 $("tabC").onclick=()=>{showView("c");const fr=$("cloudFrame");if(!fr.src)fr.src="index.html?embed=1";scrollTo(0,0);sizeCloud()};
 setInterval(cloudSync,45000);
 

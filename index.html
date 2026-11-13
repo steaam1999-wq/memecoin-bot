@@ -136,11 +136,12 @@
 <div class="wrap" id="app" hidden>
   <div class="top">
     <h1>🤖 Торговый бот</h1>
-    <span class="row"><a id="toScan" href="scanner.html" style="font-size:14px">🔎 Сканер</a><button id="refresh" title="Обновить">↻</button></span>
+    <button id="refresh" title="Обновить">↻</button>
   </div>
   <div id="alert" class="alertbox" hidden></div>
   <div class="tabs" id="tabs">
     <button data-t="home"><span class="ic">🏠</span>Главная</button>
+    <button data-go="scanner.html" id="toScan"><span class="ic">🔎</span>Сканер</button>
     <button data-t="history"><span class="ic">📜</span>История</button>
     <button data-t="events"><span class="ic">🔔</span>События</button>
     <button data-t="settings"><span class="ic">⚙️</span>Настройки</button>
@@ -160,6 +161,9 @@ const EMBED=new URLSearchParams(location.search).has("embed");
 let pin=LS.get("pin",""),S=null,FS=null,off=0,busy=false,formDirty=false;
 let tab=LS.get("tab","home");tab=({open:"home",closed:"history",ledger:"history"})[tab]||tab;if(!["home","history","events","settings"].includes(tab))tab="home";
 let hv=LS.get("hv","trades")==="ledger"?"ledger":"trades",hf=["all","m","f"].includes(LS.get("hf","all"))?LS.get("hf","all"):"all";
+// переход из меню сканера: index.html#history и т.п.
+function fromHash(){const h=location.hash.slice(1);if(!["home","history","events","settings"].includes(h))return false;tab=h;LS.set("tab",tab);history.replaceState(null,"",location.pathname+location.search);return true}
+fromHash();window.addEventListener("hashchange",()=>{if(fromHash()){formDirty=false;render(true);scrollTo(0,0)}});
 const OPEN=new Set(),op=k=>OPEN.has(k)?" open":""; // какие карточки и разделы раскрыты
 
 /* ---------- helpers ---------- */
@@ -476,7 +480,7 @@ function renderSettings(){
   </details>
   <details data-k="s4"${op("s4")}><summary>🔑 Доступ и приложение<span class="sm">код доступа, выход, значок на экране</span></summary>
     <div class="row" style="margin-top:10px"><label style="flex:1">Новый код доступа (от 6 символов)<input id="f_pin" autocomplete="off" autocapitalize="characters" spellcheck="false"></label><button data-act="setpin" style="align-self:end">Сменить код</button></div>
-    <div class="row" style="margin-top:10px"><button data-act="logout">Выйти на этом устройстве</button>${EMBED?"":'<a href="scanner.html" style="margin-left:auto">Открыть полный сканер →</a>'}</div>
+    <div class="row" style="margin-top:10px"><button data-act="logout">Выйти на этом устройстве</button>${EMBED?"":'<a href="scanner.html" style="margin-left:auto">Открыть сканер →</a>'}</div>
     <div class="msg" style="margin-top:8px">💡 Чтобы открывать как приложение: в меню браузера выберите «На экран “Домой”» / «Добавить на главный экран».</div>
   </details>
   <details data-k="s5"${op("s5")}><summary>❓ Что значат слова<span class="sm">стоп, цель, безубыток, плечо, маржа, ликвидация</span></summary>
@@ -543,7 +547,7 @@ view.addEventListener("click",e=>{
 });
 view.addEventListener("change",e=>{const s=e.target.closest("input[data-sw]");if(s)toggleBot(s.dataset.sw,s.checked,s)});
 view.addEventListener("toggle",e=>{const k=e.target.dataset?.k;if(k){if(e.target.open)OPEN.add(k);else OPEN.delete(k)}},true);
-$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;LS.set("tab",tab);formDirty=false;render(true);scrollTo(0,0)});
+$("tabs").addEventListener("click",e=>{const g=e.target.closest("button[data-go]");if(g){location.href=g.dataset.go;return}const b=e.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;LS.set("tab",tab);formDirty=false;render(true);scrollTo(0,0)});
 $("refresh").onclick=()=>load().catch(()=>{});
 async function login(){pin=$("pinIn").value.trim().toUpperCase();if(!pin)return;$("loginErr").textContent="Проверяю…";
   try{await load("state",null,true);LS.set("pin",pin);$("loginErr").textContent=""}catch(e){$("loginErr").textContent=e.message}}
