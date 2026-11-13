@@ -1094,6 +1094,15 @@ function wireFav(r){
 /* ---------- настройка столбцов ---------- */
 const COLS=[["num","№ Номер"],["fav","⭐ Избранное"],["risk","Риск"],["score","Рейтинг"],["age","Возраст"],["price","Цена"],["spark","Свечи"],["mc","Капа"],["liq","Ликвидность"],["vol","Объём 24ч"],["m5","5м"],["h1","1ч"],["h24","24ч"],["bs","Покупки/продажи"],["mom","Динамика"],["soc","Соцсети"]];
 let hiddenCols=store.get("hiddenCols",[]);
+// Строки на всю ширину таблицы («ниже — монеты не по фильтрам», «загрузка») должны занимать ровно столько колонок,
+// сколько сейчас видно. Иначе на телефоне появляются пустые колонки справа, а название монеты сжимается.
+function fixSpan(){
+  const t=$("tb").closest("table"),n=[...t.querySelectorAll("thead th")].filter(th=>getComputedStyle(th).display!=="none").length||1;
+  t.querySelectorAll("tbody td[colspan]").forEach(td=>{if(td.colSpan!==n)td.colSpan=n});
+}
+new MutationObserver(fixSpan).observe($("tb"),{childList:true});
+window.addEventListener("resize",fixSpan);window.addEventListener("orientationchange",()=>setTimeout(fixSpan,200));
+fixSpan();
 function applyCols(){
   let st=$("colStyle");if(!st){st=document.createElement("style");st.id="colStyle";document.head.appendChild(st)}
   st.textContent=hiddenCols.map(k=>`.c-${k}{display:none}`).join("")+["m5","bs","spark"].map(k=>`main.withSide .c-${k}{display:none}`).join("");
@@ -1102,6 +1111,7 @@ function applyCols(){
     +`<hr style="border-color:var(--line)"><label style="font-size:12.5px;color:var(--mut)">Свечи в таблице (24 шт.)<select id="cTf">${Object.entries(TF).map(([k,v])=>`<option value="${k}" ${CAN.tf===k?"selected":""}>по ${v[2]} — ${v[3]}</option>`).join("")}</select></label>`
     +`<hr style="border-color:var(--line)"><label class="chk"><input type="checkbox" id="compactT" ${store.get("compact",false)?"checked":""}> Компактный режим</label>
     <div style="font-size:11.5px;color:var(--mut);margin-top:4px">Когда открыта правая панель, «5м», «Покупки/продажи» и «График» скрываются сами, чтобы таблица влезла.</div>`;
+  fixSpan();
 }
 $("colBtn").onclick=e=>{e.stopPropagation();$("colMenu").hidden=!$("colMenu").hidden};
 $("colMenu").addEventListener("click",e=>e.stopPropagation());
